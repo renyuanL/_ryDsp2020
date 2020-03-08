@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp006.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./Autocorrelation_files/thinkdsp.css">
+<title>Autocorrelation</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html"><img src="./Autocorrelation_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Autocorrelation_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html"><img src="./Autocorrelation_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec37"><span class="c003">Chapter&nbsp;5&nbsp;&nbsp;Autocorrelation</span></h1>
+<p><span class="c003">In the previous chapter I characterized white noise as “uncorrelated”,
+which means that each value is independent of the others, and Brownian
+noise as “correlated”, because each value depends on the preceding
+value. In this chapter I define these terms more precisely and
+present the </span><span class="c003"><span class="c007">autocorrelation function</span></span><span class="c003">, which is a useful tool
+for signal analysis.
+</span><a id="hevea_default193"></a></p><p><span class="c003">The code for this chapter is in </span><span class="c003"><span class="c002">chap05.ipynb</span></span><span class="c003">, which is in the
+repository for this book (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp001.html#code"><span class="c003">0.2</span></a><span class="c003">).
+You can also view it at </span><a href="http://tinyurl.com/thinkdsp05"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp05</span></span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec38"><span class="c003">5.1&nbsp;&nbsp;Correlation</span></h2>
+<p><span class="c003">In general, correlation between variables means that if you know the
+value of one, you have some information about the other. There are
+several ways to quantify correlation, but the most common is the
+Pearson product-moment correlation coefficient, usually denoted
+</span><span class="c003">&#961;</span><span class="c003">. For two variables, </span><span class="c003"><span class="c006">x</span></span><span class="c003"> and </span><span class="c003"><span class="c006">y</span></span><span class="c003">, that each contain </span><span class="c003"><span class="c006">N</span></span><span class="c003"> values:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">&#961;&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><table class="display"><tbody><tr class="c013"><td class="dcell"><span class="c003">&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">i</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;(</span><span class="c003"><span class="c006">x</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;&#8722;&nbsp;µ</span><sub><span class="c003"><span class="c006">x</span></span></sub><span class="c003">)&nbsp;(</span><span class="c003"><span class="c006">y</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;&#8722;&nbsp;µ</span><sub><span class="c003"><span class="c006">y</span></span></sub><span class="c003">)</span></td></tr>
+</tbody></table></td></tr>
+<tr><td class="hbar"><span class="c003"></span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c006">N</span></span><span class="c003">&nbsp;&#963;</span><sub><span class="c003"><span class="c006">x</span></span></sub><span class="c003">&nbsp;&#963;</span><sub><span class="c003"><span class="c006">y</span></span></sub></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Where </span><span class="c003">µ</span><sub><span class="c003"><span class="c006">x</span></span></sub><span class="c003"> and </span><span class="c003">µ</span><sub><span class="c003"><span class="c006">y</span></span></sub><span class="c003"> are the means of </span><span class="c003"><span class="c006">x</span></span><span class="c003"> and </span><span class="c003"><span class="c006">y</span></span><span class="c003">, and
+</span><span class="c003">&#963;</span><sub><span class="c003"><span class="c006">x</span></span></sub><span class="c003"> and </span><span class="c003">&#963;</span><sub><span class="c003"><span class="c006">y</span></span></sub><span class="c003"> are their standard deviations.
+</span><a id="hevea_default194"></a><span class="c003">
+</span><a id="hevea_default195"></a></p><p><span class="c003">Pearson’s correlation is always between -1 and +1 (including both).
+If </span><span class="c003">&#961;</span><span class="c003"> is positive, we say that the correlation is positive,
+which means that when one variable is high, the other tends to be
+high. If </span><span class="c003">&#961;</span><span class="c003"> is negative, the correlation is negative, so
+when one variable is high, the other tends to be low.
+</span><a id="hevea_default196"></a></p><p><span class="c003">The magnitude of </span><span class="c003">&#961;</span><span class="c003"> indicates the strength of the correlation. If
+</span><span class="c003">&#961;</span><span class="c003"> is 1 or -1, the variables are perfectly correlated, which means
+that if you know one, you can make a perfect prediction about the
+other. If </span><span class="c003">&#961;</span><span class="c003"> is near zero, the correlation is probably weak, so
+if you know one, it doesn’t tell you much about the others,</span></p><p><span class="c003">I say “probably weak” because it is also possible that there is
+a nonlinear relationship that is not captured by the coefficient
+of correlation. Nonlinear relationships are often important in
+statistics, but less often relevant for signal processing, so I
+won’t say more about them here.</span></p><p><span class="c003">Python provides several ways to compute correlations. </span><span class="c003"><span class="c002">np.corrcoef</span></span><span class="c003"> takes any number of variables and computes a </span><span class="c003"><span class="c007">correlation matrix</span></span><span class="c003"> that includes correlations between each pair of
+variables.
+</span><a id="hevea_default197"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp026.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.1: Two sine waves that differ by a phase offset of 1 radian;
+their coefficient of correlation is 0.54.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">I’ll present an example with only two variables. First, I define
+a function that constructs sine waves with different phase offsets:</span></p><pre class="verbatim"><span class="c003">def make_sine(offset):
+    signal = thinkdsp.SinSignal(freq=440, offset=offset)
+    wave = signal.make_wave(duration=0.5, framerate=10000)
+    return wave
+</span></pre><p><span class="c003">Next I instantiate two waves with different offsets:</span></p><pre class="verbatim"><span class="c003">wave1 = make_sine(offset=0)
+wave2 = make_sine(offset=1)
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr1"><span class="c003">5.1</span></a><span class="c003"> shows what the first few periods of these
+waves look like. When one wave is high, the other is usually high, so we
+expect them to be correlated.</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; corr_matrix = np.corrcoef(wave1.ys, wave2.ys, ddof=0)
+[[ 1.    0.54]
+ [ 0.54  1.  ]]
+</span></pre><p><span class="c003">The option </span><span class="c003"><span class="c002">ddof=0</span></span><span class="c003"> indicates that </span><span class="c003"><span class="c002">corrcoef</span></span><span class="c003"> should divide by
+</span><span class="c003"><span class="c006">N</span></span><span class="c003">, as in the equation above, rather than use the default, </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003">.</span></p><p><span class="c003">The result is a correlation matrix:
+the first element is the correlation of </span><span class="c003"><span class="c002">wave1</span></span><span class="c003">
+with itself, which is always 1. Similarly, the last element
+is the correlation of </span><span class="c003"><span class="c002">wave2</span></span><span class="c003"> with itself.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp027.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.2: The correlation of two sine waves as a function of the
+phase offset between them. The result is a cosine.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr2"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">The off-diagonal elements contain the value we’re interested in,
+the correlation of </span><span class="c003"><span class="c002">wave1</span></span><span class="c003"> and </span><span class="c003"><span class="c002">wave2</span></span><span class="c003">. The value 0.54
+indicates that the strength of the correlation is moderate.</span></p><p><span class="c003">As the phase offset increases, this correlation decreases until
+the waves are 180 degrees out of phase, which yields correlation
+-1. Then it increases until the offset differs by 360 degrees.
+At that point we have come full circle and the correlation is 1.
+</span><a id="hevea_default198"></a></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr2"><span class="c003">5.2</span></a><span class="c003"> shows the relationship between correlation and
+phase offset for a sine wave. The shape of that curve should look
+familiar; it is a cosine. </span></p><p><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> provides a simple interface for computing the
+correlation between waves:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; wave1.corr(wave2)
+0.54
+</span></pre><span class="c003">
+</span><h2 class="section" id="sec39"><span class="c003">5.2&nbsp;&nbsp;Serial correlation</span></h2>
+<p><span class="c003">Signals often represent measurements of quantities that vary in
+time. For example, the sound signals we’ve worked with represent
+measurements of voltage (or current), which correspond to the changes
+in air pressure we perceive as sound.
+</span><a id="hevea_default199"></a></p><p><span class="c003">Measurements like this almost always have serial correlation, which
+is the correlation between each element and the next (or the previous).
+To compute serial correlation, we can shift a signal and then compute
+the correlation of the shifted version with the original.
+</span><a id="hevea_default200"></a></p><pre class="verbatim"><span class="c003">def serial_corr(wave, lag=1):
+    n = len(wave)
+    y1 = wave.ys[lag:]
+    y2 = wave.ys[:n-lag]
+    corr = np.corrcoef(y1, y2, ddof=0)[0, 1]
+    return corr
+</span></pre><p><code><span class="c003">serial_corr</span></code><span class="c003"> takes a Wave object and
+</span><span class="c003"><span class="c002">lag</span></span><span class="c003">, which is the integer number of places to shift the wave.
+It computes the correlation of the wave with a shifted version
+of itself.
+</span><a id="hevea_default201"></a></p><p><span class="c003">We can test this function with the noise signals from the previous
+chapter. We expect UU noise to be uncorrelated, based on the
+way it’s generated (not to mention the name):
+</span><a id="hevea_default202"></a></p><pre class="verbatim"><span class="c003">signal = thinkdsp.UncorrelatedGaussianNoise()
+wave = signal.make_wave(duration=0.5, framerate=11025)
+serial_corr(wave)
+</span></pre><p><span class="c003">When I ran this example, I got 0.006, which indicates a very
+small serial correlation. You might get a different value when you run
+it, but it should be comparably small.</span></p><p><span class="c003">In a Brownian noise signal, each value is the sum of the previous
+value and a random “step”, so we expect a strong serial
+correlation:
+</span><a id="hevea_default203"></a></p><pre class="verbatim"><span class="c003">signal = thinkdsp.BrownianNoise()
+wave = signal.make_wave(duration=0.5, framerate=11025)
+serial_corr(wave)
+</span></pre><p><span class="c003">Sure enough, the result I got is greater than 0.999.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp028.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.3: Serial correlation for pink noise with a range of
+parameters.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr3"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Since pink noise is in some sense between Brownian noise and UU noise,
+we might expect an intermediate correlation:
+</span><a id="hevea_default204"></a></p><pre class="verbatim"><span class="c003">signal = thinkdsp.PinkNoise(beta=1)
+wave = signal.make_wave(duration=0.5, framerate=11025)
+serial_corr(wave)
+</span></pre><p><span class="c003">With parameter </span><span class="c003">&#946;=1</span><span class="c003">, I got a serial correlation of 0.851.
+As we vary the parameter from </span><span class="c003">&#946;=0</span><span class="c003">, which is uncorrelated
+noise, to </span><span class="c003">&#946;=2</span><span class="c003">, which is Brownian, serial correlation
+ranges from 0 to almost 1, as shown in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr3"><span class="c003">5.3</span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec40"><span class="c003">5.3&nbsp;&nbsp;Autocorrelation</span></h2>
+<p><span class="c003">
+</span><a id="autopink"></a></p><p><span class="c003">In the previous section we computed the correlation between each
+value and the next, so we shifted the elements of the array by 1.
+But we can easily compute serial correlations with
+different lags.
+</span><a id="hevea_default205"></a><span class="c003">
+</span><a id="hevea_default206"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp029.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.4: Autocorrelation functions for pink noise with a range
+of parameters.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr4"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">You can think of </span><code><span class="c003">serial_corr</span></code><span class="c003"> as a function that
+maps from each value of </span><span class="c003"><span class="c002">lag</span></span><span class="c003"> to the corresponding correlation, and we
+can evaluate that function by looping through values of </span><span class="c003"><span class="c002">lag</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">def autocorr(wave):
+    lags = range(len(wave.ys)//2)
+    corrs = [serial_corr(wave, lag) for lag in lags]
+    return lags, corrs
+</span></pre><p><span class="c003"><span class="c002">autocorr</span></span><span class="c003"> takes a Wave object and returns the autocorrelation
+function as a pair of sequences: </span><span class="c003"><span class="c002">lags</span></span><span class="c003"> is a sequence of
+integers from 0 to half the length of the wave; </span><span class="c003"><span class="c002">corrs</span></span><span class="c003">
+is the sequence of serial correlations for each lag.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr4"><span class="c003">5.4</span></a><span class="c003"> shows autocorrelation functions for pink
+noise with three values of </span><span class="c003">&#946;</span><span class="c003">. For low values of </span><span class="c003">&#946;</span><span class="c003">, the
+signal is less correlated, and the autocorrelation function drops
+off to zero quickly. For larger values, serial correlation
+is stronger and drops off more slowly. With </span><span class="c003">&#946;=1.7</span><span class="c003"> serial
+correlation is strong even for long lags; this phenomenon is called
+</span><span class="c003"><span class="c007">long-range dependence</span></span><span class="c003">, because it indicates that each value in
+the signal depends on many preceding values.
+</span><a id="hevea_default207"></a></p><span class="c003">
+</span><h2 class="section" id="sec41"><span class="c003">5.4&nbsp;&nbsp;Autocorrelation of periodic signals</span></h2>
+<p><span class="c003">The autocorrelation of pink noise has interesting mathematical
+properties, but limited applications. The autocorrelation of
+periodic signals is more useful.
+</span><a id="hevea_default208"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp030.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.5: Spectrogram of a vocal chirp.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr5"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">As an example, I downloaded from </span><a href="http://greenteapress.com/thinkdsp/html/freesound.org"><span class="c003"><span class="c002">freesound.org</span></span></a><span class="c003"> a recording of
+someone singing a chirp; the repository for this book includes the
+file: </span><a href="http://greenteapress.com/thinkdsp/html/28042__bcjordan__voicedownbew.wav"><span class="c003"><span class="c002">28042__bcjordan__voicedownbew.wav</span></span></a><span class="c003">. You can use the
+Jupyter notebook for this chapter, </span><span class="c003"><span class="c002">chap05.ipynb</span></span><span class="c003">, to play it.
+</span><a id="hevea_default209"></a></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr5"><span class="c003">5.5</span></a><span class="c003"> shows the spectrogram of this wave.
+The fundamental frequency and some of the harmonics show up clearly.
+The chirp starts near 500 Hz and drops down to about 300 Hz, roughly
+from C5 to E4.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp031.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.6: Spectrum of a segment from a vocal chirp.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr6"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">To estimate pitch at a particular point in time, we could use the
+spectrum, but it doesn’t work very well. To see why not, I’ll take
+a short segment from the wave and plot its spectrum:
+</span><a id="hevea_default210"></a></p><pre class="verbatim"><span class="c003">    duration = 0.01
+    segment = wave.segment(start=0.2, duration=duration)
+    spectrum = segment.make_spectrum()
+    spectrum.plot(high=1000)
+</span></pre><p><span class="c003">This segment starts at 0.2 seconds and lasts 0.01 seconds.
+Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr6"><span class="c003">5.6</span></a><span class="c003"> shows its spectrum. There is a clear peak
+near 400 Hz, but it is hard to identify the pitch precisely. The
+length of the segment is 441 samples at a frame rate of 44100 Hz, so
+the frequency resolution is 100 Hz (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#gabor"><span class="c003">3.5</span></a><span class="c003">).
+That means the estimated pitch might be off by 50 Hz; in musical
+terms, the range from 350 Hz to 450 Hz is about 5 semitones, which is
+a big difference!
+</span><a id="hevea_default211"></a></p><p><span class="c003">We could get better frequency resolution by taking a longer segment,
+but since the pitch is changing over time, we would also get “motion
+blur”; that is, the peak would spread between the start and end pitch of
+the segment, as we saw in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#sauron"><span class="c003">3.3</span></a><span class="c003">.
+</span><a id="hevea_default212"></a></p><p><span class="c003">We can estimate pitch more precisely using autocorrelation.
+If a signal is periodic, we expect the autocorrelation to spike
+when the lag equals the period.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp032.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.7: Two segments from a chirp, one starting 0.0023 seconds
+after the other.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr7"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">To show why that works, I’ll plot two segments from the same
+recording.</span></p><pre class="verbatim"><span class="c003">def plot_shifted(wave, offset=0.001, start=0.2):
+    thinkplot.preplot(2)
+    segment1 = wave.segment(start=start, duration=0.01)
+    segment1.plot(linewidth=2, alpha=0.8)
+
+    segment2 = wave.segment(start=start-offset, duration=0.01)
+    segment2.shift(offset)
+    segment2.plot(linewidth=2, alpha=0.4)
+
+    corr = segment1.corr(segment2)
+    text = r'$\rho =$ %.2g' % corr
+    thinkplot.text(segment1.start+0.0005, -0.8, text)
+    thinkplot.config(xlabel='Time (s)')
+</span></pre><p><span class="c003">One segment starts at 0.2 seconds; the other starts 0.0023 seconds
+later. Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr7"><span class="c003">5.7</span></a><span class="c003"> shows the result. The segments
+are similar, and their correlation is 0.99. This result suggests
+that the period is near 0.0023 seconds, which corresponds to a frequency
+of 435 Hz.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp033.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.8: Autocorrelation function for a segment from a chirp.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr8"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">For this example, I estimated the period by trial and error. To automate
+the process, we can use the autocorrelation function.
+</span><a id="hevea_default213"></a></p><pre class="verbatim"><span class="c003">    lags, corrs = autocorr(segment)
+    thinkplot.plot(lags, corrs)
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr8"><span class="c003">5.8</span></a><span class="c003"> shows the autocorrelation function for
+the segment starting at </span><span class="c003"><span class="c006">t</span></span><span class="c003">=0.2</span><span class="c003"> seconds. The first peak occurs at
+</span><span class="c003"><span class="c002">lag=101</span></span><span class="c003">. We can compute the frequency that corresponds
+to that period like this:</span></p><pre class="verbatim"><span class="c003">    period = lag / segment.framerate
+    frequency = 1 / period
+</span></pre><p><span class="c003">The estimated fundamental frequency is 437 Hz. To evaluate the
+precision of the estimate, we can run the same computation with
+lags 100 and 102, which correspond to frequencies 432 and 441 Hz.
+The frequency precision using autocorrelation is less than 10 Hz,
+compared with 100 Hz using the spectrum. In musical terms, the
+expected error is about 30 cents (a third of a semitone).</span></p><span class="c003">
+</span><h2 class="section" id="sec42"><span class="c003">5.5&nbsp;&nbsp;Correlation as dot product</span></h2>
+<p><span class="c003">
+</span><a id="dotproduct"></a></p><p><span class="c003">I started the chapter with this definition of Pearson’s
+correlation coefficient:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">&#961;&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><table class="display"><tbody><tr class="c013"><td class="dcell"><span class="c003">&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">i</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;(</span><span class="c003"><span class="c006">x</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;&#8722;&nbsp;µ</span><sub><span class="c003"><span class="c006">x</span></span></sub><span class="c003">)&nbsp;(</span><span class="c003"><span class="c006">y</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;&#8722;&nbsp;µ</span><sub><span class="c003"><span class="c006">y</span></span></sub><span class="c003">)</span></td></tr>
+</tbody></table></td></tr>
+<tr><td class="hbar"><span class="c003"></span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c006">N</span></span><span class="c003">&nbsp;&#963;</span><sub><span class="c003"><span class="c006">x</span></span></sub><span class="c003">&nbsp;&#963;</span><sub><span class="c003"><span class="c006">y</span></span></sub></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Then I used </span><span class="c003">&#961;</span><span class="c003"> to define serial correlation and autocorrelation.
+That’s consistent with how these terms are used in statistics,
+but in the context of signal processing, the definitions are
+a little different.</span></p><p><span class="c003">In signal processing, we are often working with unbiased signals,
+where the mean is 0, and normalized signals, where the standard
+deviation is 1. In that case, the definition of </span><span class="c003">&#961;</span><span class="c003"> simplifies to:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">&#961;&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">1</span></td></tr>
+<tr><td class="hbar"><span class="c003"></span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c006">N</span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">i</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">x</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;</span><span class="c003"><span class="c006">y</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+And it is common to simplify even further:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">r</span></span><span class="c003">&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">i</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">x</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;</span><span class="c003"><span class="c006">y</span></span><sub><span class="c003"><span class="c006">i</span></span></sub><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+This definition of correlation is not “standardized”, so it doesn’t
+generally fall between -1 and 1. But it has other useful properties.</span></p><p><span class="c003">If you think of </span><span class="c003"><span class="c006">x</span></span><span class="c003"> and </span><span class="c003"><span class="c006">y</span></span><span class="c003"> as vectors, you might recognize this
+formula as the </span><span class="c003"><span class="c007">dot product</span></span><span class="c003">, </span><span class="c003"><span class="c006">x</span></span><span class="c003"> · </span><span class="c003"><span class="c006">y</span></span><span class="c003">. See
+</span><a href="http://en.wikipedia.org/wiki/Dot_product"><span class="c003"><span class="c002">http://en.wikipedia.org/wiki/Dot_product</span></span></a><span class="c003">.
+</span><a id="hevea_default214"></a><span class="c003">
+</span><a id="hevea_default215"></a></p><p><span class="c003">The dot product indicates the degree to which the signals are similar.
+If they are normalized so their standard deviations are 1,
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">x</span></span><span class="c003">&nbsp;·&nbsp;</span><span class="c003"><span class="c006">y</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003">cos</span><span class="c003">&#952;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003">&#952;</span><span class="c003"> is the angle between the vectors. And that explains
+why Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr2"><span class="c003">5.2</span></a><span class="c003"> is a cosine curve.</span></p><span class="c003">
+</span><h2 class="section" id="sec43"><span class="c003">5.6&nbsp;&nbsp;Using NumPy</span></h2>
+<p><span class="c003">
+</span><a id="correlate"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Autocorrelation_files/thinkdsp034.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 5.9: Autocorrelation function computed with </span><span class="c003"><span class="c002">np.correlate</span></span><span class="c003">.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.autocorr9"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">NumPy provides a function, </span><span class="c003"><span class="c002">correlate</span></span><span class="c003">, that computes
+the correlation of two functions or the autocorrelation of one
+function. We can use it to compute the autocorrelation of
+the segment from the previous section:
+</span><a id="hevea_default216"></a></p><pre class="verbatim"><span class="c003">corrs2 = np.correlate(segment.ys, segment.ys, mode='same')
+</span></pre><p><span class="c003">The option </span><span class="c003"><span class="c002">mode</span></span><span class="c003"> tells </span><span class="c003"><span class="c002">correlate</span></span><span class="c003"> what range
+of </span><span class="c003"><span class="c002">lag</span></span><span class="c003"> to use. With the value </span><span class="c003"><span class="c002">’same’</span></span><span class="c003">, the
+range is from </span><span class="c003">&#8722;</span><span class="c003"><span class="c006">N</span></span><span class="c003">/2</span><span class="c003"> to </span><span class="c003"><span class="c006">N</span></span><span class="c003">/2</span><span class="c003">, where </span><span class="c003"><span class="c006">N</span></span><span class="c003"> is the length of the
+wave array.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr9"><span class="c003">5.9</span></a><span class="c003"> shows the result. It is symmetric because
+the two signals are identical, so a negative lag on one has the same
+effect as a positive lag on the other. To compare with the results
+from </span><span class="c003"><span class="c002">autocorr</span></span><span class="c003">, we can select the second half:</span></p><pre class="verbatim"><span class="c003">    N = len(corrs2)
+    half = corrs2[N//2:]
+</span></pre><p><span class="c003">If you compare Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr9"><span class="c003">5.9</span></a><span class="c003"> to Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#fig.autocorr8"><span class="c003">5.8</span></a><span class="c003">,
+you’ll notice that the correlations computed by </span><span class="c003"><span class="c002">np.correlate</span></span><span class="c003">
+get smaller as the lags increase. That’s because </span><span class="c003"><span class="c002">np.correlate</span></span><span class="c003">
+uses the unstandardized definition of correlation;
+as the lag gets bigger, the number of points in the
+overlap between the two signals gets smaller, so the magnitude of
+the correlations decreases.
+</span><a id="hevea_default217"></a></p><p><span class="c003">We can correct that by dividing through by the lengths:</span></p><pre class="verbatim"><span class="c003">    lengths = range(N, N//2, -1)
+    half /= lengths
+</span></pre><p><span class="c003">Finally, we can normalize the results so the correlation with
+</span><span class="c003"><span class="c002">lag=0</span></span><span class="c003"> is 1.</span></p><pre class="verbatim"><span class="c003">    half /= half[0]
+</span></pre><p><span class="c003">With these adjustments, the results computed by </span><span class="c003"><span class="c002">autocorr</span></span><span class="c003"> and
+</span><span class="c003"><span class="c002">np.correlate</span></span><span class="c003"> are nearly the same. They still differ by
+1-2%. The reason is not important, but if you are curious: </span><span class="c003"><span class="c002">autocorr</span></span><span class="c003">
+standardizes the correlations independently for each lag; for
+</span><span class="c003"><span class="c002">np.correlate</span></span><span class="c003">, we standardized them all at the end.</span></p><p><span class="c003">More importantly, now you know what autocorrelation is, how to
+use it to estimate the fundamental period of a signal, and two
+ways to compute it.</span></p><span class="c003">
+</span><h2 class="section" id="sec44"><span class="c003">5.7&nbsp;&nbsp;Exercises</span></h2>
+<p><span class="c003">Solutions to these exercises are in </span><span class="c003"><span class="c002">chap05soln.ipynb</span></span><span class="c003">.</span></p><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;1</span></span><span class="c003">&nbsp;&nbsp;<em>
+The Jupyter notebook for this chapter, </em></span><span class="c003"><em><span class="c002">chap05.ipynb</span></em></span><span class="c003"><em>, includes
+an interaction that lets you compute autocorrelations for different
+lags. Use this interaction to estimate the pitch of the vocal chirp
+for a few different start times.
+</em></span></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;2</span></span><span class="c003">&nbsp;&nbsp;<em>
+The example code in </em></span><code><span class="c003"><em>chap05.ipynb</em></span></code><span class="c003"><em> shows how to use autocorrelation
+to estimate the fundamental frequency of a periodic signal.
+Encapsulate this code in a function called </em></span><code><span class="c003"><em>estimate_fundamental</em></span></code><span class="c003"><em>,
+and use it to track the pitch of a recorded sound.</em></span><p><span class="c003"><em>To see how well it works, try superimposing your pitch estimates on a
+spectrogram of the recording.
+</em></span><a id="hevea_default218"></a></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;3</span></span><span class="c003">&nbsp;&nbsp;<em>
+If you did the exercises in the previous chapter, you downloaded
+the historical price of BitCoins and estimated the power spectrum
+of the price changes. Using the same data, compute the autocorrelation
+of BitCoin prices. Does the autocorrelation function drop off quickly?
+Is there evidence of periodic behavior?
+</em></span><a id="hevea_default219"></a></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;4</span></span><span class="c003">&nbsp;&nbsp;<em>
+In the repository for this book you will find a Jupyter notebook
+called </em></span><code><span class="c003"><em>saxophone.ipynb</em></span></code><span class="c003"><em> that explores autocorrelation,
+pitch perception, and a phenomenon called the </em></span><span class="c003"><em><span class="c007">missing fundamental</span></em></span><span class="c003"><em>.
+Read through this notebook and run the examples. Try selecting
+a different segment of the recording and running the examples again.
+</em></span><a id="hevea_default220"></a><p><span class="c003"><em>Vi Hart has an excellent video called “What is up with Noises? (The
+Science and Mathematics of Sound, Frequency, and Pitch)”; it
+demonstrates the missing fundamental phenomenon and explains how pitch
+perception works (at least, to the degree that we know). Watch it at
+</em></span><a href="https://www.youtube.com/watch?v=i_0DXxNeaQ0"><span class="c003"><em><span class="c002">https://www.youtube.com/watch?v=i_0DXxNeaQ0</span></em></span></a><span class="c003"><em>.
+</em></span><a id="hevea_default221"></a><span class="c003"><em>
+</em></span><a id="hevea_default222"></a></p></div><span class="c003">
+</span></td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./Autocorrelation_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./Autocorrelation_files/q"></a><img class="c001" src="./Autocorrelation_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./Autocorrelation_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./Autocorrelation_files/q(1)"></a><img class="c001" src="./Autocorrelation_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./Autocorrelation_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Autocorrelation_files/q(2)"></a><img class="c001" src="./Autocorrelation_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./Autocorrelation_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./Autocorrelation_files/q(3)"></a><img class="c001" src="./Autocorrelation_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./Autocorrelation_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./Autocorrelation_files/q(4)"></a><img class="c001" src="./Autocorrelation_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./Autocorrelation_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Autocorrelation_files/q(5)"></a><img class="c001" src="./Autocorrelation_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html"><img src="./Autocorrelation_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Autocorrelation_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html"><img src="./Autocorrelation_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Autocorrelation_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>

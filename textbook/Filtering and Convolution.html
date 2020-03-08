@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp009.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./Filtering and Convolution_files/thinkdsp.css">
+<title>Filtering and Convolution</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html"><img src="./Filtering and Convolution_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Filtering and Convolution_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp010.html"><img src="./Filtering and Convolution_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec65"><span class="c003">Chapter&nbsp;8&nbsp;&nbsp;Filtering and Convolution</span></h1>
+<p><span class="c003">In this chapter I present one of the most important and useful
+ideas related to signal processing: the Convolution Theorem.
+But before we can understand the Convolution Theorem, we have to understand
+convolution. I’ll start with a simple example, smoothing, and
+we’ll go from there.
+</span><a id="hevea_default296"></a><span class="c003">
+</span><a id="hevea_default297"></a></p><p><span class="c003">The code for this chapter is in </span><span class="c003"><span class="c002">chap08.ipynb</span></span><span class="c003">, which is in the
+repository for this book (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp001.html#code"><span class="c003">0.2</span></a><span class="c003">).
+You can also view it at </span><a href="http://tinyurl.com/thinkdsp08"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp08</span></span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec66"><span class="c003">8.1&nbsp;&nbsp;Smoothing</span></h2>
+<p><span class="c003">
+</span><a id="smoothing"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp040.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.1: Daily closing price of Facebook stock and a 30-day moving
+average.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Smoothing is an operation that tries to remove short-term variations
+from a signal in order to reveal long-term trends. For example, if
+you plot daily changes in the price of a stock, it would look noisy;
+a smoothing operator might make it easier to see whether the price
+was generally going up or down over time. 
+</span><a id="hevea_default298"></a></p><p><span class="c003">A common smoothing algorithm is a moving average, which computes
+the mean of the previous </span><span class="c003"><span class="c006">n</span></span><span class="c003"> values, for some value of </span><span class="c003"><span class="c006">n</span></span><span class="c003">.
+</span><a id="hevea_default299"></a></p><p><span class="c003">For example, Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution1"><span class="c003">8.1</span></a><span class="c003"> shows the daily
+closing price of Facebook from May 17, 2012 to December 8,
+2015. The gray line
+is the raw data, the darker line shows the 30-day moving average.
+Smoothing removes the most
+extreme changes and makes it easier to see long-term trends.
+</span><a id="hevea_default300"></a></p><p><span class="c003">Smoothing operations also apply to sound signals. As an example, I’ll
+start with a square wave at 440 Hz. As we saw in
+Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp003.html#square"><span class="c003">2.2</span></a><span class="c003">, the harmonics of a square wave drop off
+slowly, so it contains many high-frequency components.
+</span><a id="hevea_default301"></a></p><p><span class="c003">First I’ll construct the signal and two waves:</span></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.SquareSignal(freq=440)
+    wave = signal.make_wave(duration=1, framerate=44100)
+    segment = wave.segment(duration=0.01)
+</span></pre><p><span class="c003"><span class="c002">wave</span></span><span class="c003"> is a 1-second slice of the signal; </span><span class="c003"><span class="c002">segment</span></span><span class="c003">
+is a shorter slice I’ll use for plotting.</span></p><p><span class="c003">To compute the moving average of this signal, I’ll use a window
+similar to the ones in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#windowing"><span class="c003">3.7</span></a><span class="c003">. Previously we used
+a Hamming window to avoid spectral leakage caused by discontinuity
+at the beginning and end of a signal. More generally, we can use
+windows to compute the weighted sum of samples in a wave.
+</span><a id="hevea_default302"></a><span class="c003">
+</span><a id="hevea_default303"></a></p><p><span class="c003">For example, to compute a moving average, I’ll create
+a window with 11 elements and normalize it so the elements
+add up to 1.
+</span><a id="hevea_default304"></a></p><pre class="verbatim"><span class="c003">    window = np.ones(11)
+    window /= sum(window)
+</span></pre><p><span class="c003">Now I can compute the average of the first 11 elements by
+multiplying the window by the wave array:</span></p><pre class="verbatim"><span class="c003">    ys = segment.ys
+    N = len(ys)
+    padded = thinkdsp.zero_pad(window, N)
+    prod = padded * ys
+    sum(prod)
+</span></pre><p><span class="c003"><span class="c002">padded</span></span><span class="c003"> is a version of the window with zeros added to
+the end so it is the same length as </span><span class="c003"><span class="c002">segment.ys</span></span><span class="c003">. Adding
+zeros like this is called </span><span class="c003"><span class="c007">padding</span></span><span class="c003">.
+</span><a id="hevea_default305"></a></p><p><span class="c003"><span class="c002">prod</span></span><span class="c003"> is the product of the window and the wave array.
+The sum of the elementwise products is the average of the first 11
+elements of the array. Since these elements are all -1, their average
+is -1.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp041.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.2: A square signal at 400 Hz (gray) and an 11-element
+moving average.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution2"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">To compute the next element of the moving average, we </span><span class="c003"><span class="c007">roll</span></span><span class="c003"> the
+window, which shifts the ones to the right and wraps one of the zeros
+from the end around to the beginning.</span></p><p><span class="c003">When we multiply the rolled window and the wave array, 
+we get the average of the next 11 elements of
+the wave array, starting with the second.
+</span><a id="hevea_default306"></a></p><pre class="verbatim"><span class="c003">    rolled = np.roll(rolled, 1)
+    prod = rolled * ys
+    sum(prod)
+</span></pre><p><span class="c003">The result is -1 again.</span></p><p><span class="c003">We can compute the rest of the elements the same way. The following
+function wraps the code we have seen so far in a loop and 
+stores
+the results in an array.</span></p><pre class="verbatim"><span class="c003">def smooth(ys, window):
+    N = len(ys)
+    smoothed = np.zeros(N)
+    padded = thinkdsp.zero_pad(window, N)
+    rolled = padded
+
+    for i in range(N):
+        smoothed[i] = sum(rolled * ys)
+        rolled = np.roll(rolled, 1)
+    return smoothed
+</span></pre><p><span class="c003"><span class="c002">smoothed</span></span><span class="c003"> is the array that will contain the results;
+</span><span class="c003"><span class="c002">padded</span></span><span class="c003"> is an array that contains the window
+and enough zeros to have length </span><span class="c003"><span class="c002">N</span></span><span class="c003">; and
+</span><span class="c003"><span class="c002">rolled</span></span><span class="c003"> is a copy of </span><span class="c003"><span class="c002">padded</span></span><span class="c003"> that gets shifted to
+the right by one element each time through the loop.</span></p><p><span class="c003">Inside the loop, we multiply </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> by </span><span class="c003"><span class="c002">rolled</span></span><span class="c003"> to select
+11 elements and add them up.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution2"><span class="c003">8.2</span></a><span class="c003"> shows the result for a square wave. The
+gray line is the original signal; the darker line is the smoothed
+signal. The smoothed signal starts to ramp up when the leading edge
+of the window reaches the first transition, and levels off when the
+window crosses the transition. As a result, the transitions are less
+abrupt, and the corners less sharp. If you listen to the smoothed
+signal, it sounds less buzzy and slightly muffled.</span></p><span class="c003">
+</span><h2 class="section" id="sec67"><span class="c003">8.2&nbsp;&nbsp;Convolution</span></h2>
+<p><span class="c003">
+</span><a id="convolution"></a></p><p><span class="c003">The operation we just performed – applying a window function to
+each overlapping segment of a wave – is called </span><span class="c003"><span class="c007">convolution</span></span><span class="c003">.
+</span><a id="hevea_default307"></a></p><p><span class="c003">Convolution it is such a common operation that NumPy provides an
+implementation that is simpler and faster than my version:
+</span><a id="hevea_default308"></a></p><pre class="verbatim"><span class="c003">    convolved = np.convolve(ys, window, mode='valid')
+    smooth2 = thinkdsp.Wave(convolved, framerate=wave.framerate)
+</span></pre><p><span class="c003"><span class="c002">np.convolve</span></span><span class="c003"> computes the convolution of the wave
+array and the window. The mode flag </span><span class="c003"><span class="c002">valid</span></span><span class="c003"> indicates
+that it should only compute values when the window and the
+wave array overlap completely, so it stops when the right
+edge of the window reaches the end of the wave array. Other
+than that, the result is the same as in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution2"><span class="c003">8.2</span></a><span class="c003">.</span></p><p><span class="c003">Actually, there is one other difference. The loop in the
+previous section actually computes </span><span class="c003"><span class="c007">cross-correlation</span></span><span class="c003">:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8902;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span></span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span><span class="c003">=0</span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">+</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is a wave array with length </span><span class="c003"><span class="c006">N</span></span><span class="c003">, </span><span class="c003"><span class="c006">g</span></span><span class="c003"> is the window,
+and </span><span class="c003">&#8902;</span><span class="c003"> is the symbol for cross-correlation. To
+compute the </span><span class="c003"><span class="c006">n</span></span><span class="c003">th element of the result, we shift </span><span class="c003"><span class="c006">g</span></span><span class="c003"> to
+the right, which is why the index is </span><span class="c003"><span class="c006">n</span></span><span class="c003">+</span><span class="c003"><span class="c006">m</span></span><span class="c003">.
+</span><a id="hevea_default309"></a></p><p><span class="c003">The definition of convolution is slightly different:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span></span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span><span class="c003">=0</span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">&#8722;</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+The symbol </span><span class="c003">&#8727;</span><span class="c003"> represents convolution. The difference is in the
+index of </span><span class="c003"><span class="c006">g</span></span><span class="c003">: </span><span class="c003"><span class="c006">m</span></span><span class="c003"> has been negated, so the summation iterates the
+elements of </span><span class="c003"><span class="c006">g</span></span><span class="c003"> backward (assuming that negative indices wrap around
+to the end of the array).</span></p><p><span class="c003">Because the window we used in this example is symmetric,
+cross-correlation and convolution yield the same result. When we use
+other windows, we will have to be more careful.</span></p><p><span class="c003">You might wonder why convolution is defined like this, with the window
+applied in a way that seems backwards. There
+are two reasons:</span></p><ul class="itemize"><li class="li-itemize"><span class="c003">This definition comes up naturally for several applications,
+especially analysis of signal-processing systems, which is
+the topic of Chapter&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#systems"><span class="c003">10</span></a><span class="c003">.</span></li><li class="li-itemize"><span class="c003">Also, this definition is the basis of the Convolution Theorem,
+coming up very soon.</span></li></ul><p><span class="c003">Finally, a note for people who know too much: in the
+presentation so far I have not distinguished between convolution
+and circular convolution. We’ll get to it.
+</span><a id="hevea_default310"></a></p><span class="c003">
+</span><h2 class="section" id="sec68"><span class="c003">8.3&nbsp;&nbsp;The frequency domain</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp042.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.3: Spectrum of the square wave before and after smoothing.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution4"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Smoothing makes the transitions in a square signal less abrupt,
+and makes the sound slightly muffled. Let’s see what effect this
+operation has on the spectrum. First I’ll plot the spectrum
+of the original wave:
+</span><a id="hevea_default311"></a></p><pre class="verbatim"><span class="c003">    spectrum = wave.make_spectrum()
+    spectrum.plot(color=GRAY)
+</span></pre><p><span class="c003">Then the smoothed wave:</span></p><pre class="verbatim"><span class="c003">    convolved = np.convolve(wave.ys, window, mode='same')
+    smooth = thinkdsp.Wave(convolved, framerate=wave.framerate)
+    spectrum2 = smooth.make_spectrum()
+    spectrum2.plot()
+</span></pre><p><span class="c003">The mode flag </span><span class="c003"><span class="c002">same</span></span><span class="c003"> indicates that the result should have the
+same length as the input. In this example, it will include a few values
+that “wrap around”, but that’s ok for now.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution4"><span class="c003">8.3</span></a><span class="c003"> shows the result. The fundamental
+frequency is almost unchanged; the first few harmonics are
+attenuated, and the higher harmonics are almost eliminated. So
+smoothing has the effect of a low-pass filter, which we
+saw in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp002.html#spectrums"><span class="c003">1.5</span></a><span class="c003"> and Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#pink"><span class="c003">4.4</span></a><span class="c003">.
+</span><a id="hevea_default312"></a></p><p><span class="c003">To see how much each component has been attenuated, we can
+compute the ratio of the two spectrums:</span></p><pre class="verbatim"><span class="c003">    amps = spectrum.amps
+    amps2 = spectrum2.amps
+    ratio = amps2 / amps    
+    ratio[amps&lt;560] = 0
+    thinkplot.plot(ratio)
+</span></pre><p><span class="c003"><span class="c002">ratio</span></span><span class="c003"> is the ratio of the amplitude before and after 
+smoothing. When </span><span class="c003"><span class="c002">amps</span></span><span class="c003"> is small, this ratio can be big
+and noisy, so for simplicity I set the ratio to 0 except
+where the harmonics are.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp043.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.4: Ratio of spectrums for the square wave, before and after smoothing.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution5"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution5"><span class="c003">8.4</span></a><span class="c003"> shows the result. As expected, the
+ratio is high for low frequencies and drops off at a cutoff frequency
+near 4000 Hz. But there is another feature we did not expect: above
+the cutoff, the ratio bounces around between 0 and 0.2.
+What’s up with that?</span></p><span class="c003">
+</span><h2 class="section" id="sec69"><span class="c003">8.4&nbsp;&nbsp;The Convolution Theorem</span></h2>
+<p><span class="c003">
+</span><a id="convtheorem"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp044.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.5: Ratio of spectrums for the square wave, before and after
+smoothing, along with the DFT of the smoothing window.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution6"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">The answer is the Convolution Theorem. Stated mathematically:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;=&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">)&nbsp;·&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is a wave array and </span><span class="c003"><span class="c006">g</span></span><span class="c003"> is a window. In words,
+the Convolution Theorem says that if we convolve </span><span class="c003"><span class="c006">f</span></span><span class="c003"> and </span><span class="c003"><span class="c006">g</span></span><span class="c003">,
+and then compute the DFT, we get the same answer as computing
+the DFT of </span><span class="c003"><span class="c006">f</span></span><span class="c003"> and </span><span class="c003"><span class="c006">g</span></span><span class="c003">, and then multiplying the results
+element-wise.
+</span><a id="hevea_default313"></a></p><p><span class="c003">When we apply an operation like convolution to a wave
+a wave, we say we are working in the </span><span class="c003"><span class="c007">time domain</span></span><span class="c003">, because the
+wave is a function of time. When we apply an operation like
+multiplication to the DFT, we are working in the </span><span class="c003"><span class="c007">frequency
+domain</span></span><span class="c003">, because the DFT is a function of frequency.
+</span><a id="hevea_default314"></a><span class="c003">
+</span><a id="hevea_default315"></a></p><p><span class="c003">Using these terms, we can state the Convolution Theorem more
+concisely:</span></p><blockquote class="quote"><span class="c003">
+Convolution in the time
+domain corresponds to multiplication in the frequency domain.
+</span></blockquote><p><span class="c003">And that explains Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution5"><span class="c003">8.4</span></a><span class="c003">, because when we
+convolve a wave and a window, we multiply the spectrum of
+the wave with the spectrum of the window. To see how that works,
+we can compute the DFT of the window:</span></p><pre class="verbatim"><span class="c003">    padded = zero_pad(window, N)
+    dft_window = np.fft.rfft(padded)
+    thinkplot.plot(abs(dft_window))
+</span></pre><p><span class="c003"><span class="c002">padded</span></span><span class="c003"> contains the smoothing window, padded with zeros to be the
+same length as </span><span class="c003"><span class="c002">wave</span></span><span class="c003">; </span><code><span class="c003">dft_window</span></code><span class="c003"> contains the
+DFT of </span><span class="c003"><span class="c002">padded</span></span><span class="c003">.
+</span><a id="hevea_default316"></a></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution6"><span class="c003">8.5</span></a><span class="c003"> shows the result, along with the
+ratios we computed in the previous section. The ratios are
+exactly the amplitudes in </span><code><span class="c003">dft_window</span></code><span class="c003">. Mathematically:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">abs</span></span><span class="c003">(</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">))&nbsp;/&nbsp;</span><span class="c003"><span class="c006">abs</span></span><span class="c003">(</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">))&nbsp;=&nbsp;</span><span class="c003"><span class="c006">abs</span></span><span class="c003">(</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">))&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+In this context, the DFT of a window is called a </span><span class="c003"><span class="c007">filter</span></span><span class="c003">.
+For any convolution window in the time domain, there is a
+corresponding filter in the frequency domain. And for any
+filter that can be expressed by element-wise multiplication in
+the frequency domain, there is a corresponding window.
+</span><a id="hevea_default317"></a></p><span class="c003">
+</span><h2 class="section" id="sec70"><span class="c003">8.5&nbsp;&nbsp;Gaussian filter</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp045.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.6: Boxcar and Gaussian windows.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution7"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">The moving average window we used in the previous section is a
+low-pass filter, but it is not a very good one. The DFT drops off
+steeply at first, but then it bounces around. Those bounces are
+called </span><span class="c003"><span class="c007">sidelobes</span></span><span class="c003">, and they are there because the moving average
+window is like a square wave, so its spectrum contains high-frequency
+harmonics that drop off proportionally to </span><span class="c003">1/</span><span class="c003"><span class="c006">f</span></span><span class="c003">, which is relatively
+slow.
+</span><a id="hevea_default318"></a><span class="c003">
+</span><a id="hevea_default319"></a></p><p><span class="c003">We can do better with a Gaussian window. SciPy provides functions
+that compute many common convolution windows, including </span><span class="c003"><span class="c002">gaussian</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">    gaussian = scipy.signal.gaussian(M=11, std=2)
+    gaussian /= sum(gaussian)
+</span></pre><p><span class="c003"><span class="c002">M</span></span><span class="c003"> is the number of elements in the window; </span><span class="c003"><span class="c002">std</span></span><span class="c003">
+is the standard deviation of the Gaussian distribution used to
+compute it. Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution7"><span class="c003">8.6</span></a><span class="c003"> shows the shape
+of the window. It is a discrete approximation of the Gaussian
+“bell curve”. The figure also shows the moving average window
+from the previous example, which is sometimes called a
+</span><span class="c003"><span class="c007">boxcar window</span></span><span class="c003"> because it looks like a rectangular railway car.
+</span><a id="hevea_default320"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp046.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.7: Ratio of spectrums before and after Gaussian smoothing, and
+the DFT of the window.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution8"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">I ran the computations from the previous sections again
+with this window, and generated Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution8"><span class="c003">8.7</span></a><span class="c003">,
+which shows the ratio of the spectrums before and after
+smoothing, along with the DFT of the Gaussian window. </span></p><p><span class="c003">As a low-pass filter, Gaussian smoothing is better than a simple
+moving average. After the ratio drops off, it stays low, with almost
+none of the sidelobes we saw with the boxcar window. So it does a
+better job of cutting off the higher frequencies.
+</span><a id="hevea_default321"></a></p><p><span class="c003">The reason it does so well is that the DFT of a Gaussian curve is also a
+Gaussian curve. So the ratio drops off in proportion to </span><span class="c003">exp</span><span class="c003">(&#8722;</span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">2</span></sup><span class="c003">)</span><span class="c003">,
+which is much faster than </span><span class="c003">1/</span><span class="c003"><span class="c006">f</span></span><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec71"><span class="c003">8.6&nbsp;&nbsp;Efficient convolution</span></h2>
+<p><span class="c003">
+</span><a id="effconv"></a></p><p><span class="c003">One of the reasons the FFT is such an important algorithm is that,
+combined with the Convolution Theorem, it provides an efficient
+way to compute convolution, cross-correlation, and autocorrelation.
+</span><a id="hevea_default322"></a></p><p><span class="c003">Again, the Convolution Theorem states
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;=&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">)&nbsp;·&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+So one way to compute a convolution is:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">IDFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">)&nbsp;·&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">))&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">IDFT</span></span><span class="c003"> is the inverse DFT. A simple implementation of
+convolution takes time proportional to </span><span class="c003"><span class="c006">N</span></span><sup><span class="c003">2</span></sup><span class="c003">; this algorithm,
+using FFT, takes time proportional to </span><span class="c003"><span class="c006">N</span></span><span class="c003"> </span><span class="c003">log</span><span class="c003"><span class="c006">N</span></span><span class="c003">.</span></p><p><span class="c003">We can confirm that it works by computing the same convolution
+both ways. As an example, I’ll apply it to the Facebook data
+shown in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution1"><span class="c003">8.1</span></a><span class="c003">.</span></p><pre class="verbatim"><span class="c003">    import pandas as pd
+
+    names = ['date', 'open', 'high', 'low', 'close', 'volume']
+    df = pd.read_csv('fb.csv', header=0, names=names)
+    ys = df.close.values[::-1]
+</span></pre><p><span class="c003">This example uses Pandas to read the data from the CSV file (included
+in the repository for this book). If you are not familiar with
+Pandas, don’t worry: I’m not going to do much with it in this book.
+But if you’re interested, you can learn more about it in
+</span><span class="c003"><span class="c006">Think Stats</span></span><span class="c003"> at </span><a href="http://thinkstats2.com/"><span class="c003"><span class="c002">http://thinkstats2.com</span></span></a><span class="c003">.
+</span><a id="hevea_default323"></a><span class="c003">
+</span><a id="hevea_default324"></a></p><p><span class="c003">The result, </span><span class="c003"><span class="c002">df</span></span><span class="c003">, is a DataFrame, one of the data structures
+provided by Pandas. </span><span class="c003"><span class="c002">close</span></span><span class="c003"> is a NumPy array that contains daily
+closing prices.</span></p><p><span class="c003">Next I’ll create a Gaussian window and convolve it with </span><span class="c003"><span class="c002">close</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">    window = scipy.signal.gaussian(M=30, std=6)
+    window /= window.sum()
+    smoothed = np.convolve(ys, window, mode='valid')
+</span></pre><p><code><span class="c003">fft_convolve</span></code><span class="c003"> computes the same thing using FFT:</span></p><pre class="verbatim"><span class="c003">from np.fft import fft, ifft
+
+def fft_convolve(signal, window):
+    fft_signal = fft(signal)
+    fft_window = fft(window)
+    return ifft(fft_signal * fft_window)
+</span></pre><p><span class="c003">We can test it by padding the window to the same length
+as </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> and then computing the convolution:</span></p><pre class="verbatim"><span class="c003">    padded = zero_pad(window, N)
+    smoothed2 = fft_convolve(ys, padded)
+</span></pre><p><span class="c003">The result has </span><span class="c003"><span class="c006">M</span></span><span class="c003">&#8722;1</span><span class="c003"> bogus values at the beginning, where </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is the
+length of the window. We can slice off the bogus values like this:</span></p><pre class="verbatim"><span class="c003">    M = len(window)
+    smoothed2 = smoothed2[M-1:]
+</span></pre><p><span class="c003">The result
+agrees with </span><code><span class="c003">fft_convolve</span></code><span class="c003"> with about 12 digits of precision.</span></p><span class="c003">
+</span><h2 class="section" id="sec72"><span class="c003">8.7&nbsp;&nbsp;Efficient autocorrelation</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Filtering and Convolution_files/thinkdsp047.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 8.8: Autocorrelation functions computed by NumPy and
+</span><span class="c003"><span class="c002">fft_correlate</span></span><span class="c003">.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution9"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">In Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#convolution"><span class="c003">8.2</span></a><span class="c003"> I presented definitions of
+cross-correlation and convolution, and we saw that they are
+almost the same, except that in convolution the window is
+reversed.
+</span><a id="hevea_default325"></a><span class="c003">
+</span><a id="hevea_default326"></a></p><p><span class="c003">Now that we have an efficient algorithm for convolution, we
+can also use it to compute cross-correlations and autocorrelations.
+Using the data from the previous section, we can compute the
+autocorrelation Facebook stock prices:
+</span><a id="hevea_default327"></a></p><pre class="verbatim"><span class="c003">corrs = np.correlate(close, close, mode='same')
+</span></pre><p><span class="c003">With </span><span class="c003"><span class="c002">mode=’same’</span></span><span class="c003">, the result has the same length as </span><span class="c003"><span class="c002">close</span></span><span class="c003">,
+corresponding to lags from </span><span class="c003">&#8722;</span><span class="c003"><span class="c006">N</span></span><span class="c003">/2</span><span class="c003"> to </span><span class="c003"><span class="c006">N</span></span><span class="c003">/2&#8722;1</span><span class="c003">. 
+The gray line in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution9"><span class="c003">8.8</span></a><span class="c003"> shows the result.
+Except at </span><span class="c003"><span class="c002">lag=0</span></span><span class="c003">, there are no peaks, so there is no apparent
+periodic behavior in this signal. However, the autocorrelation
+function drops off slowly, suggesting that this signal resembles
+pink noise, as we saw in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#autopink"><span class="c003">5.3</span></a><span class="c003">.
+</span><a id="hevea_default328"></a></p><p><span class="c003">To compute autocorrelation using convolution, 
+we have to zero-pad the signal to double the length. 
+This trick is necessary because the FFT is based
+on the assumption that the signal is periodic; that is, that it wraps
+around from the end to the beginning. With time-series data like
+this, that assumption is invalid. Adding zeros, and then trimming 
+the results, removes the bogus values.
+</span><a id="hevea_default329"></a></p><p><span class="c003">Also, remember that convolution reverses the direction of the window.
+In order to cancel that effect, we reverse the direction of the
+window before calling </span><code><span class="c003">fft_convolve</span></code><span class="c003">, using </span><span class="c003"><span class="c002">np.flipud</span></span><span class="c003">,
+which flips a NumPy array. The result is a view of the array,
+not a copy, so this operation is fast.</span></p><pre class="verbatim"><span class="c003">def fft_autocorr(signal):
+    N = len(signal)
+    signal = thinkdsp.zero_pad(signal, 2*N)
+    window = np.flipud(signal)
+
+    corrs = fft_convolve(signal, window)
+    corrs = np.roll(corrs, N//2+1)[:N]
+    return corrs
+</span></pre><p><span class="c003">The result from </span><code><span class="c003">fft_convolve</span></code><span class="c003"> has length </span><span class="c003">2</span><span class="c003"><span class="c006">N</span></span><span class="c003">. Of those,
+the first and last </span><span class="c003"><span class="c006">N</span></span><span class="c003">/2</span><span class="c003"> are valid; the rest are the result of
+zero-padding. To select the valid element, we roll the results
+and select the first </span><span class="c003"><span class="c006">N</span></span><span class="c003">, corresponding to lags from </span><span class="c003">&#8722;</span><span class="c003"><span class="c006">N</span></span><span class="c003">/2</span><span class="c003"> to
+</span><span class="c003"><span class="c006">N</span></span><span class="c003">/2&#8722;1</span><span class="c003">.</span></p><p><span class="c003">As shown in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution9"><span class="c003">8.8</span></a><span class="c003"> the results from
+</span><code><span class="c003">fft_autocorr</span></code><span class="c003"> and </span><span class="c003"><span class="c002">np.correlate</span></span><span class="c003"> are identical (with
+about 9 digits of precision).</span></p><p><span class="c003">Notice that the correlations in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#fig.convolution9"><span class="c003">8.8</span></a><span class="c003"> are
+large numbers; we could normalize them (between -1 and 1) as shown
+in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#correlate"><span class="c003">5.6</span></a><span class="c003">.
+</span><a id="hevea_default330"></a></p><p><span class="c003">The strategy we used here for auto-correlation also works for
+cross-correlation. Again, you have to prepare the signals by flipping
+one and padding both, and then you have to trim the invalid parts of
+the result. This padding and trimming is a nuisance, but that’s why
+libraries like NumPy provide functions to do it for you.</span></p><span class="c003">
+</span><h2 class="section" id="sec73"><span class="c003">8.8&nbsp;&nbsp;Exercises</span></h2>
+<p><span class="c003">Solutions to these exercises are in </span><span class="c003"><span class="c002">chap08soln.ipynb</span></span><span class="c003">.</span></p><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;1</span></span><span class="c003">&nbsp;&nbsp;<em>
+The notebook for this chapter is </em></span><span class="c003"><em><span class="c002">chap08.ipynb</span></em></span><span class="c003"><em>.
+Read through it and run the code.</em></span><p><span class="c003"><em>It contains an interactive widget that lets you
+experiment with the parameters of the Gaussian window to see
+what effect they have on the cutoff frequency.</em></span></p><p><span class="c003"><em>What goes wrong when you increase the width of the Gaussian,
+</em></span><span class="c003"><em><span class="c002">std</span></em></span><span class="c003"><em>, without increasing the number of elements in the window,
+</em></span><span class="c003"><em><span class="c002">M</span></em></span><span class="c003"><em>?
+</em></span><a id="hevea_default331"></a></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;2</span></span><span class="c003">&nbsp;&nbsp;<em>
+In this chapter I claimed that the Fourier transform of a Gaussian
+curve is also a Gaussian curve. For Discrete Fourier Transforms,
+this relationship is approximately true.</em></span><p><span class="c003"><em>Try it out for a few examples. What happens to the Fourier transform
+as you vary </em></span><span class="c003"><em><span class="c002">std</span></em></span><span class="c003"><em>?
+</em></span><a id="hevea_default332"></a></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;3</span></span><span class="c003">&nbsp;&nbsp;<em>
+If you did the exercises in Chapter&nbsp;</em></span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#nonperiodic"><span class="c003"><em>3</em></span></a><span class="c003"><em>, you saw the
+effect of the Hamming window, and some of the other windows provided
+by NumPy, on spectral leakage. We can get some insight into the
+effect of these windows by looking at their DFTs.</em></span><p><span class="c003"><em>In addition to the Gaussian window we used in this chapter, create a
+Hamming window with the same size. Zero-pad the windows and plot
+their DFTs. Which window acts as a better low-pass filter? You might
+find it useful to plot the DFTs on a log-</em></span><span class="c003"><span class="c006">y</span></span><span class="c003"><em> scale.</em></span></p><p><span class="c003"><em>Experiment with a few different windows and a few different sizes.
+</em></span><a id="hevea_default333"></a><span class="c003"><em>
+</em></span><a id="hevea_default334"></a><span class="c003"><em>
+</em></span><a id="hevea_default335"></a></p></div><span class="c003">
+</span></td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./Filtering and Convolution_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./Filtering and Convolution_files/q"></a><img class="c001" src="./Filtering and Convolution_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./Filtering and Convolution_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./Filtering and Convolution_files/q(1)"></a><img class="c001" src="./Filtering and Convolution_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./Filtering and Convolution_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Filtering and Convolution_files/q(2)"></a><img class="c001" src="./Filtering and Convolution_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./Filtering and Convolution_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./Filtering and Convolution_files/q(3)"></a><img class="c001" src="./Filtering and Convolution_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./Filtering and Convolution_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./Filtering and Convolution_files/q(4)"></a><img class="c001" src="./Filtering and Convolution_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./Filtering and Convolution_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Filtering and Convolution_files/q(5)"></a><img class="c001" src="./Filtering and Convolution_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html"><img src="./Filtering and Convolution_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Filtering and Convolution_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp010.html"><img src="./Filtering and Convolution_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Filtering and Convolution_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>

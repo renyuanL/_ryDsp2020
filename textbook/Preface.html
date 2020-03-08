@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp001.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./Preface_files/thinkdsp.css">
+<title>Preface</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Preface_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp002.html"><img src="./Preface_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec1">Chapter&nbsp;0&nbsp;&nbsp;Preface</h1>
+<p>
+<a id="preface"></a></p><p>Signal processing is one of my favorite topics. It is useful
+in many areas of science and engineering, and if you understand
+the fundamental ideas, it provides insight into many things
+we see in the world, and especially the things we hear.</p><p><a id="hevea_default0"></a></p><p>But unless you studied electrical or mechanical engineering, you
+probably haven’t had a chance to learn about signal processing. The
+problem is that most books (and the classes that use them) present the
+material bottom-up, starting with mathematical abstractions like
+phasors. And they tend to be theoretical, with few applications and
+little apparent relevance.</p><p>The premise of this book is that if you know how to program, you
+can use that skill to learn other things, and have fun doing it.</p><p>With a programming-based approach, I can present the most important
+ideas right away. By the end of the first chapter, you can analyze
+sound recordings and other signals, and generate new sounds. Each
+chapter introduces a new technique and an application you can
+apply to real signals. At each step you learn how to use a
+technique first, and then how it works.</p><p>This approach is more practical and, I hope you’ll agree, more fun.</p>
+<h2 class="section" id="sec2">0.1&nbsp;&nbsp;Who is this book for?</h2>
+<p>The examples and supporting code for this book are in Python. You
+should know core Python and you should be
+familiar with object-oriented features, at least using objects if not
+defining your own.</p><p>If you are not already familiar with Python, you might want to start
+with my other book, <span class="c006">Think Python</span>, which is an introduction to
+Python for people who have never programmed, or Mark
+Lutz’s <span class="c006">Learning Python</span>, which might be better for people with
+programming experience.</p><p>I use NumPy and SciPy extensively. If you are familiar with them
+already, that’s great, but I will also explain the functions
+and data structures I use.</p><p>I assume that the reader knows basic mathematics, including complex
+numbers. You don’t need much calculus; if you understand the concepts
+of integration and differentiation, that will do.
+I use some linear algebra, but I will explain it as we
+go along.</p>
+<h2 class="section" id="sec3">0.2&nbsp;&nbsp;Using the code</h2>
+<p>
+<a id="code"></a></p><p>The code and sound samples used in this book are available from
+<a href="https://github.com/AllenDowney/ThinkDSP"><span class="c002">https://github.com/AllenDowney/ThinkDSP</span></a>. Git is a version
+control system that allows you to keep track of the files that
+make up a project. A collection of files under Git’s control is
+called a “repository”. GitHub is a hosting service that provides
+storage for Git repositories and a convenient web interface.
+<a id="hevea_default1"></a>
+<a id="hevea_default2"></a>
+<a id="hevea_default3"></a></p><p>The GitHub homepage for my repository provides several ways to
+work with the code:</p><ul class="itemize"><li class="li-itemize">You can create a copy of my repository
+on GitHub by pressing the <span style="font-family:sans-serif">Fork</span> button. If you don’t already
+have a GitHub account, you’ll need to create one. After forking, you’ll
+have your own repository on GitHub that you can use to keep track
+of code you write while working on this book. Then you can
+clone the repository, which means that you copy the files
+to your computer.
+<a id="hevea_default4"></a></li><li class="li-itemize">Or you could clone
+my repository. You don’t need a GitHub account to do this, but you
+won’t be able to write your changes back to GitHub.
+<a id="hevea_default5"></a></li><li class="li-itemize">If you don’t want to use Git at all, you can download the files
+in a Zip file using the button in the lower-right corner of the
+GitHub page.</li></ul><p>All of the code is written to work in both Python 2 and Python 3
+with no translation.
+<a id="hevea_default6"></a>
+<a id="hevea_default7"></a></p><p>I developed this book using Anaconda from
+Continuum Analytics, which is a free Python distribution that includes
+all the packages you’ll need to run the code (and lots more).
+I found Anaconda easy to install. By default it does a user-level
+installation, not system-level, so you don’t need administrative
+privileges. And it supports both Python 2 and Python 3. You can
+download Anaconda from <a href="http://continuum.io/downloads"><span class="c002">http://continuum.io/downloads</span></a>.
+<a id="hevea_default8"></a></p><p>If you don’t want to use Anaconda, you will need the following
+packages:</p><ul class="itemize"><li class="li-itemize">NumPy for basic numerical computation, <a href="http://www.numpy.org/"><span class="c002">http://www.numpy.org/</span></a>;
+<a id="hevea_default9"></a></li><li class="li-itemize">SciPy for scientific computation,
+<a href="http://www.scipy.org/"><span class="c002">http://www.scipy.org/</span></a>;
+<a id="hevea_default10"></a></li><li class="li-itemize">matplotlib for visualization, <a href="http://matplotlib.org/"><span class="c002">http://matplotlib.org/</span></a>.
+<a id="hevea_default11"></a></li></ul><p>Although these are commonly used packages, they are not included with
+all Python installations, and they can be hard to install in some
+environments. If you have trouble installing them, I
+recommend using Anaconda or one of the other Python distributions
+that include these packages.
+<a id="hevea_default12"></a></p><p>Most exercises use Python scripts, but some also use Jupyter
+notebooks. If you have not used Jupyter before, you can read about
+it at <a href="http://jupyter.org/"><span class="c002">http://jupyter.org</span></a>.
+<a id="hevea_default13"></a></p><p>There are three ways you can work with the Jupyter notebooks:</p><dl class="description"><dt class="dt-description"><span class="c007">Run Jupyter on your computer</span></dt><dd class="dd-description"><p>If you installed Anaconda, you
+probably got Jupyter by default. To check, start the server from
+the command line, like this:</p><pre class="verbatim">$ jupyter notebook
+</pre><p>If it’s not installed, you can install it in Anaconda like this</p><pre class="verbatim">$ conda install jupyter
+</pre><p>When you start the server, it should launch your default web browser
+or create a new tab in an open browser window.</p></dd><dt class="dt-description"><span class="c007">Run Jupyter on Binder</span></dt><dd class="dd-description"><p>Binder is a service that runs Jupyter in a virtual machine. If you
+follow this link, <a href="http://mybinder.org/repo/AllenDowney/ThinkDSP"><span class="c002">http://mybinder.org/repo/AllenDowney/ThinkDSP</span></a>,
+you should get a Jupyter home page with the notebooks for this book
+and the supporting data and scripts.
+<a id="hevea_default14"></a></p><p>You can run the scripts and modify them to run your own code, but the
+virtual machine you run in is temporary. Any changes you make will
+disappear, along with the virtual machine, if you leave it idle for
+more than about an hour.
+<a id="hevea_default15"></a></p></dd><dt class="dt-description"><span class="c007">View notebooks on nbviewer</span></dt><dd class="dd-description"><p>When we refer to notebooks later in the book, we provide links to
+nbviewer, which provides a static view of the code and results. You
+can use these links to read the notebooks and listen to the examples,
+but you won’t be able to modify or run the code, or use the
+interactive widgets.
+<a id="hevea_default16"></a></p></dd></dl><p>Good luck, and have fun!</p><h2 class="section" id="sec4">Contributor List</h2>
+<p>If you have a suggestion or correction, please send email to 
+<span class="c002">downey@allendowney.com</span>. If I make a change based on your
+feedback, I will add you to the contributor list
+(unless you ask to be omitted).
+<a id="hevea_default17"></a></p><p>If you include at least part of the sentence the
+error appears in, that makes it easy for me to search. Page and
+section numbers are fine, too, but not as easy to work with.
+Thanks!</p><ul class="itemize"><li class="li-itemize"><span class="c004">Before I started writing, my thoughts about this book
+benefited from conversations with Boulos Harb at Google and
+Aurelio Ramos, formerly at Harmonix Music Systems.</span></li><li class="li-itemize"><span class="c004">During the Fall 2013 semester, Nathan Lintz and Ian Daniher
+worked with me on an independent study project and helped me with
+the first draft of this book.</span></li><li class="li-itemize"><span class="c004">On Reddit’s DSP forum, the anonymous user RamjetSoundwave
+helped me fix a problem with my implementation of Brownian Noise.
+And andodli found a typo.</span></li><li class="li-itemize"><span class="c004">In Spring 2015 I had the pleasure of teaching this material
+along with Prof. Oscar Mur-Miranda and Prof. Siddhartan Govindasamy.
+Both made many suggestions and corrections.</span></li><li class="li-itemize"><span class="c004">Giuseppe Masetti sent a number of very helpful suggestions.</span></li><li class="li-itemize"><span class="c004">Kim Cofer copyedited the entire book, found many errors,
+and made many helpful suggestions.</span></li></ul><p><span class="c004">Other people who found typos and errors include Silas Gyger and Abe
+Raher.</span></p><p><span class="c004">Special thanks to the technical reviewers, Eric Peters, Bruce Levens,
+and John Vincent, for many helpful suggestions, clarifications, and
+corrections.</span></p><p><span class="c004">Also thanks to Freesound, which is the source of many of the
+sound samples I use in this book, and to the Freesound users who
+contributed those samples. I include some of their wave files in
+the GitHub repository for this book, using the original file
+names, so it should be easy to find their sources.
+</span><a id="hevea_default18"></a></p><p><span class="c004">Unfortunately, most Freesound users don’t make their real names
+available, so I can only thank them by their user names. Samples
+used in this book were contributed by Freesound users: iluppai,
+wcfl10, thirsk, docquesting, kleeb, landup, zippi1, themusicalnomad,
+bcjordan, rockwehrmann, marcgascon7, jcveliz. Thank you all!</span></p><span class="c003">
+</span></td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./Preface_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./Preface_files/q"></a><img class="c001" src="./Preface_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./Preface_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./Preface_files/q(1)"></a><img class="c001" src="./Preface_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./Preface_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Preface_files/q(2)"></a><img class="c001" src="./Preface_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./Preface_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./Preface_files/q(3)"></a><img class="c001" src="./Preface_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./Preface_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./Preface_files/q(4)"></a><img class="c001" src="./Preface_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./Preface_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Preface_files/q(5)"></a><img class="c001" src="./Preface_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Preface_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp002.html"><img src="./Preface_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Preface_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>

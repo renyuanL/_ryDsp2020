@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp004.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./Non-periodic signals_files/thinkdsp.css">
+<title>Non-periodic signals</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp003.html"><img src="./Non-periodic signals_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Non-periodic signals_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html"><img src="./Non-periodic signals_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec20"><span class="c003">Chapter&nbsp;3&nbsp;&nbsp;Non-periodic signals</span></h1>
+<p><span class="c003">
+</span><a id="nonperiodic"></a></p><p><span class="c003">The signals we have worked with so far are periodic, which means
+that they repeat forever. It also means that the frequency
+components they contain do not change over time.
+In this chapter, we consider non-periodic signals,
+whose frequency components </span><span class="c003"><em>do</em></span><span class="c003"> change over time.
+In other words, pretty much all sound signals.
+</span><a id="hevea_default117"></a></p><p><span class="c003">This chapter also presents spectrograms, a common way to visualize
+non-periodic signals.
+</span><a id="hevea_default118"></a></p><p><span class="c003">The code for this chapter is in </span><span class="c003"><span class="c002">chap03.ipynb</span></span><span class="c003">, which is in the
+repository for this book (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp001.html#code"><span class="c003">0.2</span></a><span class="c003">).
+You can also view it at </span><a href="http://tinyurl.com/thinkdsp03"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp03</span></span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec21"><span class="c003">3.1&nbsp;&nbsp;Linear chirp</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Non-periodic signals_files/thinkdsp012.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 3.1: Chirp waveform near the beginning, middle, and end.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.chirp3"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">We’ll start with a </span><span class="c003"><span class="c007">chirp</span></span><span class="c003">, which is a signal with variable
+frequency. </span><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> provides a Signal called Chirp that
+makes a sinusoid that sweeps linearly through a range of
+frequencies.
+</span><a id="hevea_default119"></a></p><p><span class="c003">Here’s an example that sweeps from 220 to 880 Hz, which
+is two octaves from A3 to A5:</span></p><pre class="verbatim"><span class="c003">signal = thinkdsp.Chirp(start=220, end=880)
+wave = signal.make_wave()
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.chirp3"><span class="c003">3.1</span></a><span class="c003"> shows segments of this wave near the
+beginning, middle, and end. It’s clear that the frequency is
+increasing.</span></p><p><span class="c003">Before we go on, let’s see how Chirp is implemented. Here
+is the class definition:</span></p><pre class="verbatim"><span class="c003">class Chirp(Signal):
+    
+    def __init__(self, start=440, end=880, amp=1.0):
+        self.start = start
+        self.end = end
+        self.amp = amp
+</span></pre><p><span class="c003"><span class="c002">start</span></span><span class="c003"> and </span><span class="c003"><span class="c002">end</span></span><span class="c003"> are the frequencies, in Hz, at the start
+and end of the chirp. </span><span class="c003"><span class="c002">amp</span></span><span class="c003"> is amplitude.</span></p><p><span class="c003">Here is the function that evaluates the signal:</span></p><pre class="verbatim"><span class="c003">    def evaluate(self, ts):
+        freqs = np.linspace(self.start, self.end, len(ts)-1)
+        return self._evaluate(ts, freqs)
+</span></pre><p><span class="c003"><span class="c002">ts</span></span><span class="c003"> is the sequence of points in time where the signal should be
+evaluated; to keep this function simple, I assume they are equally-spaced.</span></p><p><span class="c003">If the length of </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> is </span><span class="c003"><span class="c006">n</span></span><span class="c003">, you can think of it as a sequence of
+</span><span class="c003"><span class="c006">n</span></span><span class="c003">&#8722;1</span><span class="c003"> intervals of time. To compute the frequency during each
+interval, I use </span><span class="c003"><span class="c002">np.linspace</span></span><span class="c003">, which returns a NumPy array of
+</span><span class="c003"><span class="c006">n</span></span><span class="c003">&#8722;1</span><span class="c003"> values between </span><span class="c003"><span class="c002">start</span></span><span class="c003"> and </span><span class="c003"><span class="c002">end</span></span><span class="c003">.
+</span><a id="hevea_default120"></a></p><p><code><span class="c003">_evaluate</span></code><span class="c003"> is a private method
+that does the rest of the math</span><sup><a id="text3" href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#note3"><span class="c003">1</span></a></sup><span class="c003">:</span></p><pre class="verbatim"><span class="c003">    def _evaluate(self, ts, freqs):
+        dts = np.diff(ts)
+        dphis = PI2 * freqs * dts
+        phases = np.cumsum(dphis)
+        phases = np.insert(phases, 0, 0)
+        ys = self.amp * np.cos(phases)
+        return ys
+</span></pre><p><span class="c003"><span class="c002">np.diff</span></span><span class="c003"> computes the difference between adjacent elements
+of </span><span class="c003"><span class="c002">ts</span></span><span class="c003">, returning the length of each interval in seconds. 
+If the elements of </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> are equally spaced,
+the </span><span class="c003"><span class="c002">dts</span></span><span class="c003"> are all the same.
+</span><a id="hevea_default121"></a></p><p><span class="c003">The next step is to figure out how much the phase changes during
+each interval. In Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp002.html#sigobs"><span class="c003">1.7</span></a><span class="c003"> we saw that when frequency is
+constant, the phase, </span><span class="c003">&#966;</span><span class="c003">, increases linearly over time:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">&#966;&nbsp;=&nbsp;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">t</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+When frequency is a function of time, the </span><span class="c003"><em>change</em></span><span class="c003"> in phase
+during a short time interval, </span><span class="c003">&#916; </span><span class="c003"><span class="c006">t</span></span><span class="c003">, is:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">&#916;&nbsp;&#966;&nbsp;=&nbsp;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)&nbsp;&#916;&nbsp;</span><span class="c003"><span class="c006">t</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+In Python, since </span><span class="c003"><span class="c002">freqs</span></span><span class="c003"> contains </span><span class="c003"><span class="c006">f</span></span><span class="c003">(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)</span><span class="c003"> and </span><span class="c003"><span class="c002">dts</span></span><span class="c003">
+contains the time intervals, we can write</span></p><pre class="verbatim"><span class="c003">dphis = PI2 * freqs * dts
+</span></pre><p><span class="c003">Now, since </span><span class="c003"><span class="c002">dphis</span></span><span class="c003"> contains the changes in phase, we can
+get the total phase at each timestep by adding up the changes:</span></p><pre class="verbatim"><span class="c003">phases = np.cumsum(dphis)
+phases = np.insert(phases, 0, 0)
+</span></pre><p><span class="c003"><span class="c002">np.cumsum</span></span><span class="c003"> computes the cumulative sum, which is almost
+what we want, but it doesn’t start at 0. So I use </span><span class="c003"><span class="c002">np.insert</span></span><span class="c003">
+to add a 0 at the beginning.
+</span><a id="hevea_default122"></a><span class="c003">
+</span><a id="hevea_default123"></a></p><p><span class="c003">The result is a NumPy array where the </span><span class="c003"><span class="c002">i</span></span><span class="c003">th element contains the
+sum of the first </span><span class="c003"><span class="c002">i</span></span><span class="c003"> terms from </span><span class="c003"><span class="c002">dphis</span></span><span class="c003">; that is, the total
+phase at the end of the </span><span class="c003"><span class="c002">i</span></span><span class="c003">th interval. Finally, </span><span class="c003"><span class="c002">np.cos</span></span><span class="c003">
+computes the amplitude of the wave as a function of phase (remember
+that phase is expressed in radians).</span></p><p><span class="c003">If you know calculus, you might notice that the limit as
+</span><span class="c003">&#916; </span><span class="c003"><span class="c006">t</span></span><span class="c003"> gets small is
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">d</span></span><span class="c003">&#966;&nbsp;=&nbsp;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">dt</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Dividing through by </span><span class="c003"><span class="c006">dt</span></span><span class="c003"> yields
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003"><span class="c006">d</span></span><span class="c003">&#966;</span></td></tr>
+<tr><td class="hbar"><span class="c003"></span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c006">dt</span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;=&nbsp;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+In other words, frequency is the derivative of phase. Conversely,
+phase is the integral of frequency. When we used </span><span class="c003"><span class="c002">cumsum</span></span><span class="c003">
+to go from frequency to phase, we were approximating integration.
+</span><a id="hevea_default124"></a><span class="c003">
+</span><a id="hevea_default125"></a></p><span class="c003">
+</span><h2 class="section" id="sec22"><span class="c003">3.2&nbsp;&nbsp;Exponential chirp</span></h2>
+<p><span class="c003">When you listen to this chirp, you might notice that the pitch
+rises quickly at first and then slows down.
+The chirp spans two octaves, but it only takes 2/3 s to span
+the first octave, and twice as long to span the second. 
+</span><a id="hevea_default126"></a></p><p><span class="c003">The reason is that our perception of pitch depends on the logarithm of
+frequency. As a result, the </span><span class="c003"><span class="c007">interval</span></span><span class="c003"> we hear between two notes
+depends on the </span><span class="c003"><em>ratio</em></span><span class="c003"> of their frequencies, not the difference.
+“Interval” is the musical term for the perceived difference between
+two pitches.
+</span><a id="hevea_default127"></a></p><p><span class="c003">For example, an octave is an interval where the ratio of two
+pitches is 2. So the interval from 220 to 440 is one octave
+and the interval from 440 to 880 is also one octave. The difference
+in frequency is bigger, but the ratio is the same.
+</span><a id="hevea_default128"></a></p><p><span class="c003">As a result, if frequency increases linearly, as in a linear
+chirp, the perceived pitch increases logarithmically.</span></p><p><span class="c003">If you want the perceived pitch to increase linearly, the frequency
+has to increase exponentially. A signal with that shape is called
+an </span><span class="c003"><span class="c007">exponential chirp</span></span><span class="c003">.</span></p><p><span class="c003">Here’s the code that makes one:</span></p><pre class="verbatim"><span class="c003">class ExpoChirp(Chirp):
+    
+    def evaluate(self, ts):
+        start, end = np.log10(self.start), np.log10(self.end)
+        freqs = np.logspace(start, end, len(ts)-1)
+        return self._evaluate(ts, freqs)
+</span></pre><p><span class="c003">Instead of </span><span class="c003"><span class="c002">np.linspace</span></span><span class="c003">, this version of </span><span class="c003"><span class="c002">evaluate</span></span><span class="c003"> uses
+</span><span class="c003"><span class="c002">np.logspace</span></span><span class="c003">, which creates a series of frequencies
+whose logarithms are equally spaced, which means that they increase
+exponentially.
+</span><a id="hevea_default129"></a></p><p><span class="c003">That’s it; everything else is the same as Chirp. Here’s the code
+that makes one:</span></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.ExpoChirp(start=220, end=880)
+    wave = signal.make_wave(duration=1)
+</span></pre><p><span class="c003">You can listen to these examples in </span><span class="c003"><span class="c002">chap03.ipynb</span></span><span class="c003"> and compare
+the linear and exponential chirps. </span></p><span class="c003">
+</span><h2 class="section" id="sec23"><span class="c003">3.3&nbsp;&nbsp;Spectrum of a chirp</span></h2>
+<p><span class="c003">
+</span><a id="sauron"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Non-periodic signals_files/thinkdsp013.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 3.2: Spectrum of a one-second one-octave chirp.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.chirp1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">What do you think happens if you compute the spectrum of a chirp?
+Here’s an example that constructs a one-second, one-octave chirp and
+its spectrum:
+</span><a id="hevea_default130"></a></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.Chirp(start=220, end=440)
+    wave = signal.make_wave(duration=1)
+    spectrum = wave.make_spectrum()
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.chirp1"><span class="c003">3.2</span></a><span class="c003"> shows the result. The spectrum has
+components at every frequency from 220 to 440 Hz, with variations
+that look a little like the Eye of Sauron
+(see </span><a href="http://en.wikipedia.org/wiki/Sauron"><span class="c003"><span class="c002">http://en.wikipedia.org/wiki/Sauron</span></span></a><span class="c003">).
+</span><a id="hevea_default131"></a></p><p><span class="c003">The spectrum is approximately flat between 220 and 440 Hz, which
+indicates that the signal spends equal time at each frequency in this
+range. Based on that observation, you should be able to guess what
+the spectrum of an exponential chirp looks like.</span></p><p><span class="c003">The spectrum gives hints about the structure of the signal,
+but it obscures the relationship between frequency and time.
+For example, we cannot tell by looking at this spectrum whether
+the frequency went up or down, or both.</span></p><span class="c003">
+</span><h2 class="section" id="sec24"><span class="c003">3.4&nbsp;&nbsp;Spectrogram</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Non-periodic signals_files/thinkdsp014.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 3.3: Spectrogram of a one-second one-octave chirp.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.chirp2"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">To recover the relationship between frequency and time, we can break
+the chirp into segments and plot the spectrum of each segment. The
+result is called a </span><span class="c003"><span class="c007">short-time Fourier Transform</span></span><span class="c003"> (STFT).
+</span><a id="hevea_default132"></a><span class="c003">
+</span><a id="hevea_default133"></a></p><p><span class="c003">There are several ways to visualize a STFT, but the most common
+is a </span><span class="c003"><span class="c007">spectrogram</span></span><span class="c003">, which shows time on the x-axis and frequency
+on the y-axis. Each column in the spectrogram shows the spectrum of
+a short segment, using color or grayscale to represent amplitude.
+</span><a id="hevea_default134"></a></p><p><span class="c003">As an example, I’ll compute the spectrogram of this chirp:</span></p><pre class="verbatim"><span class="c003">signal = thinkdsp.Chirp(start=220, end=440)
+wave = signal.make_wave(duration=1, framerate=11025)
+</span></pre><p><span class="c003"><span class="c002">Wave</span></span><span class="c003"> provides </span><code><span class="c003">make_spectrogram</span></code><span class="c003">, which returns a
+</span><span class="c003"><span class="c002">Spectrogram</span></span><span class="c003"> object:</span></p><pre class="verbatim"><span class="c003">spectrogram = wave.make_spectrogram(seg_length=512)
+spectrogram.plot(high=700)
+</span></pre><p><code><span class="c003">seg_length</span></code><span class="c003"> is the number of samples in each segment. I chose
+512 because FFT is most efficient when the number of samples is a
+power of 2.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.chirp2"><span class="c003">3.3</span></a><span class="c003"> shows the result. The x-axis shows time from
+0 to 1 seconds. The y-axis shows frequency from 0 to 700 Hz. I cut
+off the top part of the spectrogram; the full range goes to 5512.5 Hz,
+which is half of the frame rate.</span></p><p><span class="c003">The spectrogram shows clearly that frequency increases linearly
+over time. 
+However, notice that the peak in each column is blurred across 2–3
+cells. This blurring reflects the limited resolution of the
+spectrogram.</span></p><span class="c003">
+</span><h2 class="section" id="sec25"><span class="c003">3.5&nbsp;&nbsp;The Gabor limit</span></h2>
+<p><span class="c003">
+</span><a id="gabor"></a></p><p><span class="c003">The </span><span class="c003"><span class="c007">time resolution</span></span><span class="c003"> of the spectrogram is the duration of the
+segments, which corresponds to the width of the cells in the
+spectrogram. Since each segment is 512 frames, and there are 11,025
+frames per second, the duration of each segment is about 0.046 seconds.
+</span><a id="hevea_default135"></a></p><p><span class="c003">The </span><span class="c003"><span class="c007">frequency resolution</span></span><span class="c003"> is the frequency range between
+elements in the spectrum, which corresponds to the height of the
+cells. With 512 frames, we get 256 frequency components over a range
+from 0 to 5512.5 Hz, so the range between components is 21.6 Hz.
+</span><a id="hevea_default136"></a><span class="c003">
+</span><a id="hevea_default137"></a></p><p><span class="c003">More generally, if </span><span class="c003"><span class="c006">n</span></span><span class="c003"> is the segment length, the spectrum contains
+</span><span class="c003"><span class="c006">n</span></span><span class="c003">/2</span><span class="c003"> components. If the frame rate is </span><span class="c003"><span class="c006">r</span></span><span class="c003">, the maximum frequency in
+the spectrum is </span><span class="c003"><span class="c006">r</span></span><span class="c003">/2</span><span class="c003">. So the time resolution is </span><span class="c003"><span class="c006">n</span></span><span class="c003">/</span><span class="c003"><span class="c006">r</span></span><span class="c003"> and the
+frequency resolution is
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003"><span class="c006">r</span></span><span class="c003">/2</span></td></tr>
+<tr><td class="hbar"><span class="c003"></span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c006">n</span></span><span class="c003">/2</span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+which is </span><span class="c003"><span class="c006">r</span></span><span class="c003">/</span><span class="c003"><span class="c006">n</span></span><span class="c003">.</span></p><p><span class="c003">Ideally we would like time resolution to be small, so we can see rapid
+changes in frequency. And we would like frequency resolution to be
+small so we can see small changes in frequency. But you can’t have
+both. Notice that time resolution, </span><span class="c003"><span class="c006">n</span></span><span class="c003">/</span><span class="c003"><span class="c006">r</span></span><span class="c003">, is the inverse of frequency
+resolution, </span><span class="c003"><span class="c006">r</span></span><span class="c003">/</span><span class="c003"><span class="c006">n</span></span><span class="c003">. So if one gets smaller, the other gets bigger.</span></p><p><span class="c003">For example, if you double the segment length, you cut frequency
+resolution in half (which is good), but you double time resolution
+(which is bad). Even increasing the frame rate doesn’t help. You get
+more samples, but the range of frequencies increases at
+the same time.</span></p><p><span class="c003">This tradeoff is called the </span><span class="c003"><span class="c007">Gabor limit</span></span><span class="c003"> and it is a fundamental
+limitation of this kind of time-frequency analysis.
+</span><a id="hevea_default138"></a></p><span class="c003">
+</span><h2 class="section" id="sec26"><span class="c003">3.6&nbsp;&nbsp;Leakage</span></h2>
+<p><span class="c003">
+</span><a id="window"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Non-periodic signals_files/thinkdsp015.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 3.4: Spectrum of a periodic segment of a sinusoid (left), a
+non-periodic segment (middle), a windowed non-periodic segment
+(right).</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.windowing1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">In order to explain how </span><code><span class="c003">make_spectrogram</span></code><span class="c003"> works, I have
+to explain windowing; and in order to explain windowing, I have to
+show you the problem it is meant to address, which is leakage.
+</span><a id="hevea_default139"></a><span class="c003">
+</span><a id="hevea_default140"></a></p><p><span class="c003">The Discrete Fourier Transform (DFT), which we use to compute
+Spectrums, treats waves as if they are periodic; that is, it assumes
+that the finite segment it operates on is a complete period from an
+infinite signal that repeats over all time. In practice, this
+assumption is often false, which creates problems.
+</span><a id="hevea_default141"></a></p><p><span class="c003">One common problem is discontinuity at the beginning and end of the
+segment. Because DFT assumes that the signal is periodic, it
+implicitly connects the end of the segment back to the beginning to
+make a loop. If the end does not connect smoothly to the beginning,
+the discontinuity creates additional frequency components in the
+segment that are not in the signal.
+</span><a id="hevea_default142"></a></p><p><span class="c003">As an example, let’s start with a sine signal that contains only
+one frequency component at 440 Hz.</span></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.SinSignal(freq=440)
+</span></pre><p><span class="c003">If we select a segment that happens to be an integer multiple of
+the period, the end of the segment connects smoothly with the
+beginning, and DFT behaves well.</span></p><pre class="verbatim"><span class="c003">    duration = signal.period * 30
+    wave = signal.make_wave(duration)
+    spectrum = wave.make_spectrum()
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.windowing1"><span class="c003">3.4</span></a><span class="c003"> (left) shows the result. As expected,
+there is a single peak at 440 Hz.</span></p><p><span class="c003">But if the duration is not a multiple of the period, bad things
+happen. With </span><span class="c003"><span class="c002">duration = signal.period * 30.25</span></span><span class="c003">, the signal
+starts at 0 and ends at 1.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.windowing1"><span class="c003">3.4</span></a><span class="c003"> (middle) shows
+the spectrum of this segment. Again, the peak is at 440 Hz, but now
+there are additional components spread out from 240 to 640 Hz. This
+spread is called </span><span class="c003"><span class="c007">spectral leakage</span></span><span class="c003">, because some of the energy that
+is actually at the fundamental frequency leaks into other frequencies.
+</span><a id="hevea_default143"></a></p><p><span class="c003">In this example, leakage happens because we are using DFT on a segment
+that becomes discontinuous when we treat it as periodic.</span></p><span class="c003">
+</span><h2 class="section" id="sec27"><span class="c003">3.7&nbsp;&nbsp;Windowing</span></h2>
+<p><span class="c003">
+</span><a id="windowing"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Non-periodic signals_files/thinkdsp016.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 3.5: Segment of a sinusoid (top), Hamming window (middle), product
+of the segment and the window (bottom).</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.windowing2"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">We can reduce leakage by smoothing out the discontinuity between
+the beginning and end of the segment, and one way to do that is
+</span><span class="c003"><span class="c007">windowing</span></span><span class="c003">.
+</span><a id="hevea_default144"></a></p><p><span class="c003">A “window” is a function designed to transform a non-periodic
+segment into something that can pass for periodic.
+Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.windowing2"><span class="c003">3.5</span></a><span class="c003"> (top) shows a segment where the end does not
+connect smoothly to the beginning.
+</span><a id="hevea_default145"></a></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.windowing2"><span class="c003">3.5</span></a><span class="c003"> (middle) shows a “Hamming window”, one of the
+more common window functions. No window function is perfect, but some
+can be shown to be optimal for different applications, and Hamming
+is a good, all-purpose window.
+</span><a id="hevea_default146"></a></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.windowing2"><span class="c003">3.5</span></a><span class="c003"> (bottom) shows the result of multiplying the
+window by the original signal. Where the window is close to 1, the
+signal is unchanged. Where the window is close to 0, the signal is
+attenuated. Because the window tapers at both ends, the end of the
+segment connects smoothly to the beginning.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.windowing1"><span class="c003">3.4</span></a><span class="c003"> (right) shows the spectrum of the windowed
+signal. Windowing has reduced leakage substantially, but not
+completely.</span></p><p><span class="c003">Here’s what the code looks like. </span><span class="c003"><span class="c002">Wave</span></span><span class="c003"> provides </span><span class="c003"><span class="c002">window</span></span><span class="c003">,
+which applies a Hamming window:</span></p><pre class="verbatim"><span class="c003">#class Wave:
+    def window(self, window):
+        self.ys *= window
+</span></pre><p><span class="c003">And NumPy provides </span><span class="c003"><span class="c002">hamming</span></span><span class="c003">, which computes a Hamming window
+with a given length:</span></p><pre class="verbatim"><span class="c003">window = np.hamming(len(wave))
+wave.window(window)
+</span></pre><p><span class="c003">NumPy provides functions to compute other window
+functions, including </span><span class="c003"><span class="c002">bartlett</span></span><span class="c003">, </span><span class="c003"><span class="c002">blackman</span></span><span class="c003">, </span><span class="c003"><span class="c002">hanning</span></span><span class="c003">,
+and </span><span class="c003"><span class="c002">kaiser</span></span><span class="c003">. One of the exercises at the end of this chapter
+asks you to experiment with these other windows.</span></p><span class="c003">
+</span><h2 class="section" id="sec28"><span class="c003">3.8&nbsp;&nbsp;Implementing spectrograms</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Non-periodic signals_files/thinkdsp017.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 3.6: Overlapping Hamming windows.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.windowing3"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Now that we understand windowing, we can understand the
+implementation of </span><code><span class="c003">make_spectrogram</span></code><span class="c003">.
+Here is the </span><span class="c003"><span class="c002">Wave</span></span><span class="c003"> method that computes spectrograms:
+</span><a id="hevea_default147"></a></p><pre class="verbatim"><span class="c003">#class Wave:
+    def make_spectrogram(self, seg_length):
+        window = np.hamming(seg_length)
+        i, j = 0, seg_length
+        step = seg_length / 2
+
+        spec_map = {}
+
+        while j &lt; len(self.ys):
+            segment = self.slice(i, j)
+            segment.window(window)
+
+            t = (segment.start + segment.end) / 2
+            spec_map[t] = segment.make_spectrum()
+
+            i += step
+            j += step
+
+        return Spectrogram(spec_map, seg_length)
+</span></pre><p><span class="c003">This is the longest function in the book, so if you can handle
+this, you can handle anything.</span></p><p><span class="c003">The parameter, </span><span class="c003"><span class="c002">self</span></span><span class="c003">, is a Wave object.
+</span><code><span class="c003">seg_length</span></code><span class="c003"> is the number of samples in each segment.</span></p><p><span class="c003"><span class="c002">window</span></span><span class="c003"> is a Hamming window with the same length as the segments.</span></p><p><span class="c003"><span class="c002">i</span></span><span class="c003"> and </span><span class="c003"><span class="c002">j</span></span><span class="c003"> are the slice indices that select segments from
+the wave. </span><span class="c003"><span class="c002">step</span></span><span class="c003"> is the offset between segments. Since </span><span class="c003"><span class="c002">step</span></span><span class="c003"> is half of </span><code><span class="c003">seg_length</span></code><span class="c003">, the segments overlap by half.
+Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#fig.windowing3"><span class="c003">3.6</span></a><span class="c003"> shows what these overlapping windows look
+like.</span></p><p><code><span class="c003">spec_map</span></code><span class="c003"> is a dictionary that maps from a timestamp to
+a Spectrum.</span></p><p><span class="c003">Inside the while loop, we select a slice from the wave and apply
+the window; then we construct a Spectrum
+object and add it to </span><code><span class="c003">spec_map</span></code><span class="c003">. The nominal time of
+each segment, </span><span class="c003"><span class="c002">t</span></span><span class="c003">, is the midpoint.</span></p><p><span class="c003">Then we advance </span><span class="c003"><span class="c002">i</span></span><span class="c003"> and </span><span class="c003"><span class="c002">j</span></span><span class="c003">, and continue as long as </span><span class="c003"><span class="c002">j</span></span><span class="c003">
+doesn’t go past the end of the Wave.</span></p><p><span class="c003">Finally, the method constructs and returns a </span><span class="c003"><span class="c002">Spectrogram</span></span><span class="c003"> object. Here
+is the definition of the class:</span></p><pre class="verbatim"><span class="c003">class Spectrogram(object):
+    def __init__(self, spec_map, seg_length):
+        self.spec_map = spec_map
+        self.seg_length = seg_length
+</span></pre><p><span class="c003">Like many init methods, this one just stores the
+parameters as attributes.</span></p><p><span class="c003"><span class="c002">Spectrogram</span></span><span class="c003"> provides </span><span class="c003"><span class="c002">plot</span></span><span class="c003">, which generates a
+pseudocolor plot with time along the x-axis and frequency along
+the y-axis.</span></p><p><span class="c003">And that’s how Spectrograms are implemented.</span></p><span class="c003">
+</span><h2 class="section" id="sec29"><span class="c003">3.9&nbsp;&nbsp;Exercises</span></h2>
+<p><span class="c003">Solutions to these exercises are in </span><span class="c003"><span class="c002">chap03soln.ipynb</span></span><span class="c003">.</span></p><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;1</span></span><span class="c003">&nbsp;&nbsp;<em>
+Run and listen to the examples in </em></span><span class="c003"><em><span class="c002">chap03.ipynb</span></em></span><span class="c003"><em>, which is
+in the repository for this book, and also available at
+</em></span><a href="http://tinyurl.com/thinkdsp03"><span class="c003"><em><span class="c002">http://tinyurl.com/thinkdsp03</span></em></span></a><span class="c003"><em>.</em></span><p><span class="c003"><em>In the leakage example, try replacing the Hamming window with one of
+the other windows provided by NumPy, and see what effect they have on
+leakage. See
+</em></span><a href="http://docs.scipy.org/doc/numpy/reference/routines.window.html"><span class="c003"><em><span class="c002">http://docs.scipy.org/doc/numpy/reference/routines.window.html</span></em></span></a><span class="c003"><em>
+</em></span></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;2</span></span><span class="c003">&nbsp;&nbsp;<em>
+Write a class called </em></span><span class="c003"><em><span class="c002">SawtoothChirp</span></em></span><span class="c003"><em> that extends </em></span><span class="c003"><em><span class="c002">Chirp</span></em></span><span class="c003"><em>
+and overrides </em></span><span class="c003"><em><span class="c002">evaluate</span></em></span><span class="c003"><em> to generate a sawtooth waveform with
+frequency that increases (or decreases) linearly.</em></span><p><span class="c003"><em>Hint: combine the evaluate functions from </em></span><span class="c003"><em><span class="c002">Chirp</span></em></span><span class="c003"><em> and
+</em></span><span class="c003"><em><span class="c002">SawtoothSignal</span></em></span><span class="c003"><em>.</em></span></p><p><span class="c003"><em>Draw a sketch of what you think the spectrogram of this signal
+looks like, and then plot it. The effect of aliasing should be
+visually apparent, and if you listen carefully, you can hear it.
+</em></span><a id="hevea_default148"></a><span class="c003"><em>
+</em></span></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;3</span></span><span class="c003">&nbsp;&nbsp;<em>
+Make a sawtooth chirp that sweeps from 2500 to 3000 Hz, then use it to
+make a wave with duration 1 s and frame rate 20 kHz. Draw a sketch of
+what you think the spectrum will look like. Then plot the
+spectrum and see if you got it right.
+</em></span></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;4</span></span><span class="c003">&nbsp;&nbsp;<em>
+In musical terminology, a “glissando” is a note that slides from one
+pitch to another, so it is similar to a chirp.</em></span><p><span class="c003"><em>Find or make a recording of a glissando and plot a spectrogram of the
+first few seconds. One suggestion: George Gershwin’s </em></span><span class="c003"><em><span class="c006">Rhapsody in
+Blue</span></em></span><span class="c003"><em> starts with a famous clarinet glissando, which you can download
+from </em></span><a href="http://archive.org/details/rhapblue11924"><span class="c003"><em><span class="c002">http://archive.org/details/rhapblue11924</span></em></span></a><span class="c003"><em>.
+</em></span><a id="hevea_default149"></a><span class="c003"><em>
+</em></span></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;5</span></span><span class="c003">&nbsp;&nbsp;<em>
+A trombone player can play a glissando by extending the trombone
+slide while blowing continuously. As the slide extends, the total
+length of the tube gets longer, and the resulting pitch is inversely
+proportional to length.
+</em></span><a id="hevea_default150"></a><p><span class="c003"><em>Assuming that the player moves the slide at a constant speed, how
+does frequency vary with time? </em></span></p><p><span class="c003"><em>Write a class called </em></span><span class="c003"><em><span class="c002">TromboneGliss</span></em></span><span class="c003"><em> that extends </em></span><span class="c003"><em><span class="c002">Chirp</span></em></span><span class="c003"><em> and
+provides </em></span><span class="c003"><em><span class="c002">evaluate</span></em></span><span class="c003"><em>. Make a wave that simulates a trombone
+glissando from C3 up to F3 and back down to C3. C3 is 262 Hz; F3 is
+349 Hz.</em></span></p><p><span class="c003"><em>Plot a spectrogram of the resulting wave. Is a trombone glissando
+more like a linear or exponential chirp?
+</em></span><a id="hevea_default151"></a></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;6</span></span><span class="c003">&nbsp;&nbsp;<em>
+Make or find a recording of a series of vowel sounds and look at the
+spectrogram. Can you identify different vowels?
+</em></span><a id="hevea_default152"></a></div><span class="c003">
+</span><hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes"><span class="c003">
+</span><a id="note3" href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html#text3"><span class="c003">1</span></a></dt><dd class="dd-thefootnotes"><span class="c003"><div class="footnotetext">Beginning a method name
+with an underscore makes it “private”, indicating that it is not
+part of the API that should be used outside the class definition.</div>
+</span></dd></dl>
+</td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./Non-periodic signals_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./Non-periodic signals_files/q"></a><img class="c001" src="./Non-periodic signals_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./Non-periodic signals_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./Non-periodic signals_files/q(1)"></a><img class="c001" src="./Non-periodic signals_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./Non-periodic signals_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Non-periodic signals_files/q(2)"></a><img class="c001" src="./Non-periodic signals_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./Non-periodic signals_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./Non-periodic signals_files/q(3)"></a><img class="c001" src="./Non-periodic signals_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./Non-periodic signals_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./Non-periodic signals_files/q(4)"></a><img class="c001" src="./Non-periodic signals_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./Non-periodic signals_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Non-periodic signals_files/q(5)"></a><img class="c001" src="./Non-periodic signals_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp003.html"><img src="./Non-periodic signals_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Non-periodic signals_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html"><img src="./Non-periodic signals_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Non-periodic signals_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>

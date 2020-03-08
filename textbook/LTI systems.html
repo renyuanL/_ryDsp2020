@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp011.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./LTI systems_files/thinkdsp.css">
+<title>LTI systems</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp010.html"><img src="./LTI systems_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./LTI systems_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp012.html"><img src="./LTI systems_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec82"><span class="c003">Chapter&nbsp;10&nbsp;&nbsp;LTI systems</span></h1>
+<p><span class="c003">
+</span><a id="systems"></a></p><p><span class="c003">This chapter presents the theory of signals and systems, using
+musical acoustics as an example. It explains an
+important application of the Convolution Theorem, characterization
+of linear, time-invariant systems (which I’ll define soon).</span></p><p><span class="c003">The code for this chapter is in </span><span class="c003"><span class="c002">chap10.ipynb</span></span><span class="c003">, which is in the
+repository for this book (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp001.html#code"><span class="c003">0.2</span></a><span class="c003">).
+You can also view it at </span><a href="http://tinyurl.com/thinkdsp10"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp10</span></span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec83"><span class="c003">10.1&nbsp;&nbsp;Signals and systems</span></h2>
+<p><span class="c003">In the context of signal processing, a </span><span class="c003"><span class="c007">system</span></span><span class="c003"> is an abstract
+representation of anything that takes a signal as input and produces
+a signal as output.
+</span><a id="hevea_default375"></a><span class="c003">
+</span><a id="hevea_default376"></a><span class="c003">
+</span><a id="hevea_default377"></a></p><p><span class="c003">For example, an electronic amplifier is a circuit that takes an
+electrical signal as input and produces a (louder) signal as output.
+</span><a id="hevea_default378"></a></p><p><span class="c003">As another example, when you listen to a musical performance, you
+can think of the room as a system that takes the sound of the
+performance at the location where it is generated and produces a
+somewhat different sound at the location where you hear it.</span></p><p><span class="c003">A </span><span class="c003"><span class="c007">linear, time-invariant system</span></span><sup><a id="text4" href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#note4"><span class="c003">1</span></a></sup><span class="c003"> is a
+system with these two properties:
+</span><a id="hevea_default379"></a><span class="c003">
+</span><a id="hevea_default380"></a><span class="c003">
+</span><a id="hevea_default381"></a></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">Linearity: If you put two inputs into the system at the same
+time, the result is the sum of their outputs. Mathematically, if an
+input </span><span class="c003"><span class="c006">x</span></span><sub><span class="c003">1</span></sub><span class="c003"> produces output </span><span class="c003"><span class="c006">y</span></span><sub><span class="c003">1</span></sub><span class="c003"> and another input </span><span class="c003"><span class="c006">x</span></span><sub><span class="c003">2</span></sub><span class="c003"> produces
+</span><span class="c003"><span class="c006">y</span></span><sub><span class="c003">2</span></sub><span class="c003">, then </span><span class="c003"><span class="c006">a</span></span><span class="c003"> </span><span class="c003"><span class="c006">x</span></span><sub><span class="c003">1</span></sub><span class="c003"> + </span><span class="c003"><span class="c006">b</span></span><span class="c003"> </span><span class="c003"><span class="c006">x</span></span><sub><span class="c003">2</span></sub><span class="c003"> produces </span><span class="c003"><span class="c006">a</span></span><span class="c003"> </span><span class="c003"><span class="c006">y</span></span><sub><span class="c003">1</span></sub><span class="c003"> + </span><span class="c003"><span class="c006">b</span></span><span class="c003"> </span><span class="c003"><span class="c006">y</span></span><sub><span class="c003">2</span></sub><span class="c003">, where </span><span class="c003"><span class="c006">a</span></span><span class="c003"> and
+</span><span class="c003"><span class="c006">b</span></span><span class="c003"> are scalars.</span></li><li class="li-enumerate"><span class="c003">Time invariance: The
+effect of the system doesn’t vary over time, or depend on the state
+of the system. So if inputs </span><span class="c003"><span class="c006">x</span></span><sub><span class="c003">1</span></sub><span class="c003"> and </span><span class="c003"><span class="c006">x</span></span><sub><span class="c003">2</span></sub><span class="c003"> differ only by a shift in time,
+their outputs </span><span class="c003"><span class="c006">y</span></span><sub><span class="c003">1</span></sub><span class="c003"> and </span><span class="c003"><span class="c006">y</span></span><sub><span class="c003">2</span></sub><span class="c003"> differ by the same shift, but are otherwise
+identical.</span></li></ol><p><span class="c003">Many physical systems have these properties, at least approximately.</span></p><ul class="itemize"><li class="li-itemize"><span class="c003">Circuits that contain only resistors, capacitors and inductors are
+LTI, to the degree that the components behave like their idealized
+models.
+</span><a id="hevea_default382"></a></li><li class="li-itemize"><span class="c003">Mechanical systems that contain springs, masses and
+dashpots are also LTI, assuming linear springs (force proportional
+to displacement) and dashpots (force proportional to velocity).
+</span><a id="hevea_default383"></a></li><li class="li-itemize"><span class="c003">Also, and most relevant to applications in this book,
+the media that transmit sound (including air, water
+and solids) are well-modeled by LTI systems.</span></li></ul><p><span class="c003">LTI systems are described by linear differential equations, and
+the solutions of those equations are complex sinusoids (see
+</span><a href="http://en.wikipedia.org/wiki/Linear_differential_equation"><span class="c003"><span class="c002">http://en.wikipedia.org/wiki/Linear_differential_equation</span></span></a><span class="c003">).
+</span><a id="hevea_default384"></a></p><p><span class="c003">This result provides an algorithm for computing the effect of
+an LTI system on an input signal:</span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">Express the signal as the sum of complex sinusoid components.</span></li><li class="li-enumerate"><span class="c003">For each input component, compute the corresponding output component.</span></li><li class="li-enumerate"><span class="c003">Add up the output components.</span></li></ol><p><span class="c003">At this point, I hope this algorithm sounds familiar. It’s the
+same algorithm we used for convolution in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#effconv"><span class="c003">8.6</span></a><span class="c003">, and
+for differentiation in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp010.html#effdiff"><span class="c003">9.3</span></a><span class="c003">. This process
+is called </span><span class="c003"><span class="c007">spectral decomposition</span></span><span class="c003"> because we “decompose”
+the input signal into its spectral components.
+</span><a id="hevea_default385"></a></p><p><span class="c003">In order to apply this process to an LTI system, we have to </span><span class="c003"><span class="c007">characterize</span></span><span class="c003"> the system by finding its effect on each component
+of the input signal. For mechanical systems, it turns out that there
+is a simple and efficient way to do that: you kick it and record
+the output.
+</span><a id="hevea_default386"></a></p><p><span class="c003">Technically, the “kick” is called an </span><span class="c003"><span class="c007">impulse</span></span><span class="c003"> and the
+output is called the </span><span class="c003"><span class="c007">impulse response</span></span><span class="c003">. You might wonder
+how a single impulse can completely characterize a system. You
+can see the answer by computing the DFT of an impulse. Here’s
+a wave array with an impulse at </span><span class="c003"><span class="c006">t</span></span><span class="c003">=0</span><span class="c003">:
+</span><a id="hevea_default387"></a><span class="c003">
+</span><a id="hevea_default388"></a></p><pre class="verbatim"><span class="c003">    impulse = np.zeros(8)
+    impulse[0] = 1
+    impulse_spectrum = np.fft.fft(impulse)
+</span></pre><p><span class="c003">Here’s the wave array:</span></p><pre class="verbatim"><span class="c003">[ 1.  0.  0.  0.  0.  0.  0.  0.]
+</span></pre><p><span class="c003">And here’s its spectrum:</span></p><pre class="verbatim"><span class="c003">[ 1.+0.j  1.+0.j  1.+0.j  1.+0.j  1.+0.j  1.+0.j  1.+0.j  1.+0.j]
+</span></pre><p><span class="c003">The spectrum is all ones; that is, an impulse is the sum of components
+with equal magnitudes at all frequencies. This
+spectrum should not be confused with white noise, which has the same
+</span><span class="c003"><em>average</em></span><span class="c003"> power at all frequencies, but varies around that
+average.
+</span><a id="hevea_default389"></a></p><p><span class="c003">When you test a system by inputting
+an impulse, you are testing the response of the 
+system at all frequencies. And you can test them all at the same
+time because the system is linear, so simultaneous tests don’t
+interfere with each other.</span></p><span class="c003">
+</span><h2 class="section" id="sec84"><span class="c003">10.2&nbsp;&nbsp;Windows and filters</span></h2>
+<p><span class="c003">
+</span><a id="winfilt"></a></p><p><span class="c003">To show why this kind of system characterization works, I
+will start with a simple example: a 2-element moving average.
+We can think of this operation as a system that takes a signal
+as an input and produces a slightly smoother signal as an output.
+</span><a id="hevea_default390"></a></p><p><span class="c003">In this example we know what the window is, so we can compute
+the corresponding filter. But that’s not usually the case; in the
+next section we’ll look at an example where we don’t know the
+window or the filter ahead of time.
+</span><a id="hevea_default391"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./LTI systems_files/thinkdsp057.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 10.1: DFT of a 2-element moving average window.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.systems1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Here’s a window that computes a
+2-element moving average (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#smoothing"><span class="c003">8.1</span></a><span class="c003">):</span></p><pre class="verbatim"><span class="c003">    window_array = np.array([0.5, 0.5, 0, 0, 0, 0, 0, 0,])
+    window = thinkdsp.Wave(window_array, framerate=8)
+</span></pre><p><span class="c003">We can find the corresponding filter by computing the DFT of the
+window:</span></p><pre class="verbatim"><span class="c003">    filtr = window.make_spectrum(full=True)
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#fig.systems1"><span class="c003">10.1</span></a><span class="c003"> shows the result. The filter that corresponds to a
+moving average window is a low-pass filter with the approximate shape
+of a Gaussian curve.
+</span><a id="hevea_default392"></a></p><p><span class="c003">Now imagine that we did not know the window or the corresponding filter,
+and we wanted to characterize this system. We would do that by
+inputting an impulse and measuring the impulse response.</span></p><p><span class="c003">In this example, we can compute the impulse response by multiplying the
+spectrums of the impulse and the filter, and then converting the result
+from a spectrum to a wave:</span></p><pre class="verbatim"><span class="c003">    product = impulse_spectrum * filtr
+    filtered = product.make_wave()
+</span></pre><p><span class="c003">Since </span><code><span class="c003">impulse_spectrum</span></code><span class="c003"> is all ones, the product is
+identical to the filter, and the filtered wave is identical to the
+window.</span></p><p><span class="c003">This example demonstrates two things:</span></p><ul class="itemize"><li class="li-itemize"><span class="c003">Because the spectrum of an impulse is all ones, the DFT
+of the impulse response is identical to the filter that
+characterizes the system.</span></li><li class="li-itemize"><span class="c003">Therefore, the impulse response is identical to the
+convolution window that characterizes the system.</span></li></ul><span class="c003">
+</span><h2 class="section" id="sec85"><span class="c003">10.3&nbsp;&nbsp;Acoustic response</span></h2>
+<p><span class="c003">
+</span><a id="response"></a></p><p><span class="c003">To characterize the acoustic response of a room or open space, a
+simple way to generate an impulse is to pop a balloon or
+fire a gun. The result is an input signal that approximates an
+impulse, so the sound you hear approximates the impulse response.
+</span><a id="hevea_default393"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./LTI systems_files/thinkdsp058.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 10.2: Waveform of a gunshot.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.systems6"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">As an example, I’ll use a recording of a gunshot to characterize
+the room where the gun was fired, then use the impulse response
+to simulate the effect of that room on a violin recording.
+</span><a id="hevea_default394"></a></p><p><span class="c003">This example is in </span><span class="c003"><span class="c002">chap10.ipynb</span></span><span class="c003">, which is in the repository
+for this book; you can also view it, and listen to the examples,
+at </span><a href="http://tinyurl.com/thinkdsp10"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp10</span></span></a><span class="c003">.</span></p><p><span class="c003">Here’s the gunshot:</span></p><pre class="verbatim"><span class="c003">    response = thinkdsp.read_wave('180961__kleeb__gunshots.wav')
+    response = response.segment(start=0.26, duration=5.0)
+    response.normalize()
+    response.plot()
+</span></pre><p><span class="c003">I select a segment starting at 0.26 seconds to remove the silence
+before the gunshot. Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#fig.systems6"><span class="c003">10.2</span></a><span class="c003"> (left) shows the
+waveform of the gunshot. Next we compute the DFT of </span><span class="c003"><span class="c002">response</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">    transfer = response.make_spectrum()
+    transfer.plot()
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#fig.systems6"><span class="c003">10.2</span></a><span class="c003"> (right) shows the result. This spectrum
+encodes the response of the room; for each frequency, the spectrum
+contains a complex number that represents an amplitude multiplier and
+a phase shift. This spectrum is called a </span><span class="c003"><span class="c007">transfer
+function</span></span><span class="c003"> because it contains information about how the system transfers
+the input to the output.
+</span><a id="hevea_default395"></a></p><p><span class="c003">Now we can simulate the effect this room would have on the sound
+of a violin. Here is the violin recording we used in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp002.html#violin"><span class="c003">1.1</span></a><span class="c003">
+</span><a id="hevea_default396"></a></p><pre class="verbatim"><span class="c003">    violin = thinkdsp.read_wave('92002__jcveliz__violin-origional.wav')
+    violin.truncate(len(response))
+    violin.normalize()
+</span></pre><p><span class="c003">The violin and gunshot waves were sampled at the same frame rate,
+44,100 Hz. And coincidentally, the duration of both is about the
+same. I trimmed the violin wave to the same length as the gunshot.</span></p><p><span class="c003">Next I compute the DFT of the violin wave:</span></p><pre class="verbatim"><span class="c003">    spectrum = violin.make_spectrum()
+</span></pre><p><span class="c003">Now I know the magnitude and phase of each frequency component in the
+input, and I know the transfer function of the system. Their
+product is the DFT of the output, which we can use to compute the
+output wave:</span></p><pre class="verbatim"><span class="c003">    output = (spectrum * transfer).make_wave()
+    output.normalize()
+    output.plot()
+</span></pre><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./LTI systems_files/thinkdsp059.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 10.3: The waveform of the violin recording before and after convolution.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.systems7"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#fig.systems7"><span class="c003">10.3</span></a><span class="c003"> shows the input (top) and output (bottom) of
+the system. They are substantially different, and the differences are
+clearly audible. Load </span><span class="c003"><span class="c002">chap10.ipynb</span></span><span class="c003"> and listen to them. One
+thing I find striking about this example is that you can get a sense
+of what the room was like; to me, it sounds like a long, narrow room
+with hard floors and ceilings. That is, like a firing range.</span></p><p><span class="c003">There’s one thing I glossed over in this example that I’ll mention
+in case it bothers anyone. The violin recording I started with
+has already been transformed by one system: the room where it was
+recorded. So what I really computed in my example is the sound
+of the violin after two transformations. To properly simulate
+the sound of a violin in a different room, I should have characterized
+the room where the violin was recorded and applied the inverse
+of that transfer function first.</span></p><span class="c003">
+</span><h2 class="section" id="sec86"><span class="c003">10.4&nbsp;&nbsp;Systems and convolution</span></h2>
+<p><span class="c003">
+</span><a id="sysconv"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./LTI systems_files/thinkdsp060.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 10.4: Sum of a wave and a shifted, scaled copy.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.systems8"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">If you think the previous example is black magic,
+you are not alone. I’ve been thinking about it for a while and it
+still makes my head hurt.</span></p><p><span class="c003">In the previous section, I suggested one way to think about it:</span></p><ul class="itemize"><li class="li-itemize"><span class="c003">An impulse is made up of components with amplitude 1 at all
+frequencies.
+</span><a id="hevea_default397"></a></li><li class="li-itemize"><span class="c003">The impulse response contains the sum of the responses of the
+system to all of these components.</span></li><li class="li-itemize"><span class="c003">The transfer function, which is the DFT of the impulse response,
+encodes the effect of the system on each frequency component in the form
+of an amplitude multiplier and a phase shift.
+</span><a id="hevea_default398"></a></li><li class="li-itemize"><span class="c003">For any input, we can compute the response of the system
+by breaking the input into components, computing the response to
+each component, and adding them up.
+</span><a id="hevea_default399"></a></li></ul><p><span class="c003">But if you don’t like that, there’s another way to think about
+it altogether: convolution! By the Convolution Theorem, multiplication
+in the frequency domain corresponds to convolution in the time
+domain. In this example, the output of the system is the convolution
+of the input and the system response.
+</span><a id="hevea_default400"></a></p><p><span class="c003">Here are the keys to understanding why that works:</span></p><ul class="itemize"><li class="li-itemize"><span class="c003">You can think of the samples in the input wave as a sequence
+of impulses with varying amplitude.</span></li><li class="li-itemize"><span class="c003">Each impulse in the input yields a copy of the impulse response,
+shifted in time (because the system is time-invariant) and scaled by
+the amplitude of the input.</span></li><li class="li-itemize"><span class="c003">The output is the sum of the shifted, scaled copies of the
+impulse response. The copies add up because the system is linear.
+</span><a id="hevea_default401"></a><span class="c003">
+</span><a id="hevea_default402"></a></li></ul><p><span class="c003">Let’s work our way up gradually. Suppose that instead of firing one
+gun, we fire two: a big one with amplitude 1 at </span><span class="c003"><span class="c006">t</span></span><span class="c003">=0</span><span class="c003"> and a
+smaller one with amplitude 0.5 at </span><span class="c003"><span class="c006">t</span></span><span class="c003">=1</span><span class="c003">.</span></p><p><span class="c003">We can compute the response of the system by adding up
+the original impulse response and a scaled, shifted copy of itself.
+Here’s a function that makes a shifted, scaled copy of
+a wave:</span></p><pre class="verbatim"><span class="c003">def shifted_scaled(wave, shift, factor):
+    res = wave.copy()
+    res.shift(shift)
+    res.scale(factor)
+    return res
+</span></pre><p><span class="c003">The parameter </span><span class="c003"><span class="c002">shift</span></span><span class="c003"> is a time shift in seconds; </span><span class="c003"><span class="c002">factor</span></span><span class="c003">
+is a multiplicative factor.</span></p><p><span class="c003">Here’s how we use it to compute the response to a two-gun salute:</span></p><pre class="verbatim"><span class="c003">    shift = 1
+    factor = 0.5
+    gun2 = response + shifted_scaled(response, shift, factor)
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#fig.systems8"><span class="c003">10.4</span></a><span class="c003"> shows the result. You can hear what
+it sounds like in </span><span class="c003"><span class="c002">chap10.ipynb</span></span><span class="c003">. Not surprisingly, it
+sounds like two gunshots, the first one louder than the second.</span></p><p><span class="c003">Now suppose instead of two guns, you add up 100 guns fired at a rate
+of 441 shots per second.
+This loop computes the result:</span></p><pre class="verbatim"><span class="c003">    dt = 1 / 441
+    total = 0
+    for k in range(100):
+        total += shifted_scaled(response, k*dt, 1.0)
+</span></pre><p><span class="c003">With 441 shots per second,
+you don’t hear the individual shots. Instead, it sounds
+like a periodic signal at 441 Hz. If you play this example, it
+sounds like a car horn in a garage.</span></p><p><span class="c003">And that brings us to a key insight: you can think of any wave as a
+series of samples, where each sample is an impulse with a different
+amplitude.
+</span><a id="hevea_default403"></a></p><p><span class="c003">As a example, I’ll generate a sawtooth signal at 441 Hz:</span></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.SawtoothSignal(freq=441)
+    wave = signal.make_wave(duration=0.1,
+                            framerate=response.framerate)
+</span></pre><p><span class="c003">Now I’ll loop through the series of impulses that make up the
+sawtooth, and add up the impulse responses:
+</span><a id="hevea_default404"></a></p><pre class="verbatim"><span class="c003">    total = 0
+    for t, y in zip(wave.ts, wave.ys):
+        total += shifted_scaled(response, t, y)
+</span></pre><p><span class="c003">The result is what it would sound like to play a sawtooth wave in a
+firing range. Again, you can listen to it in </span><span class="c003"><span class="c002">chap10.ipynb</span></span><span class="c003">.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./LTI systems_files/thinkdsp061.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 10.5: Diagram of the sum of scaled and shifted copies of </span><span class="c003"><span class="c006">g</span></span><span class="c003">.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.convolution"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#fig.convolution"><span class="c003">10.5</span></a><span class="c003"> shows a diagram of this computation,
+where </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is the sawtooth, </span><span class="c003"><span class="c006">g</span></span><span class="c003"> is the impulse response, and </span><span class="c003"><span class="c006">h</span></span><span class="c003">
+is the sum of the shifted, scaled copies of </span><span class="c003"><span class="c006">g</span></span><span class="c003">.</span></p><p><span class="c003">For the example shown:</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">h</span></span><span class="c003">[2]&nbsp;=&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[0]</span><span class="c003"><span class="c006">g</span></span><span class="c003">[2]&nbsp;+&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[1]</span><span class="c003"><span class="c006">g</span></span><span class="c003">[1]&nbsp;+&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[2]</span><span class="c003"><span class="c006">g</span></span><span class="c003">[0]&nbsp;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">And more generally,</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">h</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span></span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span><span class="c003">=0</span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">&#8722;</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">You might recognize this equation from Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html#convolution"><span class="c003">8.2</span></a><span class="c003">. It
+is the convolution of </span><span class="c003"><span class="c006">f</span></span><span class="c003"> and </span><span class="c003"><span class="c006">g</span></span><span class="c003">. This shows that if the input is </span><span class="c003"><span class="c006">f</span></span><span class="c003">
+and the impulse response of the system is </span><span class="c003"><span class="c006">g</span></span><span class="c003">, the output is the
+convolution of </span><span class="c003"><span class="c006">f</span></span><span class="c003"> and </span><span class="c003"><span class="c006">g</span></span><span class="c003">.
+</span><a id="hevea_default405"></a></p><p><span class="c003">In summary, there are two ways to think about the effect of a system
+on a signal:</span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">The input is a sequence of impulses, so the output is the sum of
+scaled, shifted copies of the impulse response; that sum is the
+convolution of the input and the impulse response.
+</span><a id="hevea_default406"></a></li><li class="li-enumerate"><span class="c003">The DFT of the impulse response is a transfer function that
+encodes the effect of the system on each frequency component as a
+magnitude and phase offset. The DFT of the input encodes the
+magnitude and phase offset of the frequency components it contains.
+Multiplying the DFT of the input by the transfer function yields
+the DFT of the output.
+</span><a id="hevea_default407"></a></li></ol><p><span class="c003">The equivalence of these descriptions should not be a surprise;
+it is basically a statement of the Convolution Theorem:
+convolution of </span><span class="c003"><span class="c006">f</span></span><span class="c003"> and </span><span class="c003"><span class="c006">g</span></span><span class="c003"> in the time
+domain corresponds to multiplication in the frequency domain.</span></p><p><span class="c003">And if you wondered why convolution is defined as it is, which
+seemed backwards when we talked about smoothing and difference
+windows, now you know the reason: the definition of convolution
+appears naturally in the response of an LTI system to a signal.</span></p><span class="c003">
+</span><h2 class="section" id="sec87"><span class="c003">10.5&nbsp;&nbsp;Proof of the Convolution Theorem</span></h2>
+<p><span class="c003">Well, I’ve put it off long enough. It’s time to prove the Convolution
+Theorem (CT), which states:
+</span><a id="hevea_default408"></a><span class="c003">
+</span><a id="hevea_default409"></a></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;=&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">where </span><span class="c003"><span class="c006">f</span></span><span class="c003"> and </span><span class="c003"><span class="c006">g</span></span><span class="c003"> are vectors with the same length, </span><span class="c003"><span class="c006">N</span></span><span class="c003">.</span></p><p><span class="c003">I’ll proceed in two steps:</span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">I’ll show that in the special case where </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is a complex
+exponential, convolution with </span><span class="c003"><span class="c006">g</span></span><span class="c003"> has the effect of multiplying
+</span><span class="c003"><span class="c006">f</span></span><span class="c003"> by a scalar. 
+</span><a id="hevea_default410"></a></li><li class="li-enumerate"><span class="c003">In the more general case where </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is not a complex exponential,
+we can use the DFT to express it as a sum of exponential components,
+compute the convolution of each component (by multiplication) and
+then add up the results.
+</span><a id="hevea_default411"></a></li></ol><p><span class="c003">Together these steps prove the Convolution Theorem. But first, let’s
+assemble the pieces we’ll need. The DFT of </span><span class="c003"><span class="c006">g</span></span><span class="c003">, which I’ll call </span><span class="c003"><span class="c006">G</span></span><span class="c003">,
+is:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;=&nbsp;</span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">n</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">k</span></span><span class="c003"> is an index of frequency from
+0 to </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003"> and </span><span class="c003"><span class="c006">n</span></span><span class="c003"> is an index of time from 0 to </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003">.
+The result is a vector of </span><span class="c003"><span class="c006">N</span></span><span class="c003"> complex numbers.</span></p><p><span class="c003">The inverse DFT of </span><span class="c003"><span class="c006">F</span></span><span class="c003">, which I’ll call </span><span class="c003"><span class="c006">f</span></span><span class="c003">, is:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">IDFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">F</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">k</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">F</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;</span><span class="c003">exp</span><span class="c003">(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Here’s the definition of convolution:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">&#8722;</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">m</span></span><span class="c003"> is another index of time from 0 to </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003">.
+Convolution is commutative, so I could equivalently write:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">&#8722;</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Now let’s consider the special case where </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is a complex
+exponential with frequency </span><span class="c003"><span class="c006">k</span></span><span class="c003">, which I’ll call </span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">f</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span><span class="c003">exp</span><span class="c003">(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">k</span></span><span class="c003"> is an index of frequency and </span><span class="c003"><span class="c006">n</span></span><span class="c003"> is an index of time.</span></p><p><span class="c003">Plugging </span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003"> into the second definition of convolution yields
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003">exp</span><span class="c003">(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;(</span><span class="c003"><span class="c006">n</span></span><span class="c003">&#8722;</span><span class="c003"><span class="c006">m</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+We can split the first term into a product:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003">exp</span><span class="c003">(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">m</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+The first half does not depend on </span><span class="c003"><span class="c006">m</span></span><span class="c003">, so we can pull it out of the
+summation:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span><span class="c003">exp</span><span class="c003">(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">m</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">m</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">[</span><span class="c003"><span class="c006">m</span></span><span class="c003">]&nbsp;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Now we recognize that the first term is </span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">, and the summation is
+</span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003"> (using </span><span class="c003"><span class="c006">m</span></span><span class="c003"> as the index of time). So we can write:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+which shows that for each complex exponential, </span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">, convolution
+with </span><span class="c003"><span class="c006">g</span></span><span class="c003"> has the effect of multiplying </span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003"> by </span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003">. In mathematical
+terms, each </span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003"> is an eigenvector of this operation, and
+</span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003"> is the corresponding eigenvalue (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp010.html#effdiff"><span class="c003">9.3</span></a><span class="c003">).
+</span><a id="hevea_default412"></a><span class="c003">
+</span><a id="hevea_default413"></a></p><p><span class="c003">Now for the second part of the proof. If the input signal, </span><span class="c003"><span class="c006">f</span></span><span class="c003">, doesn’t
+happen to be a complex exponential, we can express it as a sum of
+complex exponentials by computing its DFT, </span><span class="c003"><span class="c006">F</span></span><span class="c003">.
+For each value of </span><span class="c003"><span class="c006">k</span></span><span class="c003"> from 0 to </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003">, </span><span class="c003"><span class="c006">F</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003"> is the complex
+magnitude of the component with frequency </span><span class="c003"><span class="c006">k</span></span><span class="c003">.
+</span><a id="hevea_default414"></a></p><p><span class="c003">Each input component is a complex exponential with magnitude
+</span><span class="c003"><span class="c006">F</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003">, so each output component is a complex
+exponential with magnitude </span><span class="c003"><span class="c006">F</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">] </span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003">, based on the first part of
+the proof.</span></p><p><span class="c003">Because the system is linear, the output is just the sum of the
+output components:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">k</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">F</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Plugging in the definition of </span><span class="c003"><span class="c006">e</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003"> yields
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">k</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">F</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;</span><span class="c003"><span class="c006">G</span></span><span class="c003">[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;</span><span class="c003">exp</span><span class="c003">(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+The right hand side is the inverse DFT of the product </span><span class="c003"><span class="c006">F</span></span><span class="c003"> </span><span class="c003"><span class="c006">G</span></span><span class="c003">. Thus:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;=&nbsp;</span><span class="c003"><span class="c006">IDFT</span></span><span class="c003">(&nbsp;</span><span class="c003"><span class="c006">F</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">G</span></span><span class="c003">&nbsp;)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Substituting </span><span class="c003"><span class="c006">F</span></span><span class="c003"> = </span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">)</span><span class="c003"> and </span><span class="c003"><span class="c006">G</span></span><span class="c003"> = </span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">)</span><span class="c003">:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;=&nbsp;</span><span class="c003"><span class="c006">IDFT</span></span><span class="c003">(&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Finally, taking the DFT of both sides yields the Convolution Theorem:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;&#8727;&nbsp;</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;=&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">f</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">g</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+QED</span></p><span class="c003">
+</span><h2 class="section" id="sec88"><span class="c003">10.6&nbsp;&nbsp;Exercises</span></h2>
+<p><span class="c003">Solutions to these exercises are in </span><span class="c003"><span class="c002">chap10soln.ipynb</span></span><span class="c003">.</span></p><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;1</span></span><span class="c003">&nbsp;&nbsp;<em>
+In Section&nbsp;</em></span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#sysconv"><span class="c003"><em>10.4</em></span></a><span class="c003"><em> I describe convolution as the sum of shifted,
+scaled copies of a signal. 
+</em></span><a id="hevea_default415"></a><span class="c003"><em>
+</em></span><a id="hevea_default416"></a><p><span class="c003"><em>But in Section&nbsp;</em></span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#response"><span class="c003"><em>10.3</em></span></a><span class="c003"><em>, when we multiply the
+DFT of the signal by the transfer function, that operation corresponds
+to </em></span><span class="c003"><em><span class="c007">circular convolution</span></em></span><span class="c003"><em>, which assumes that the signal is
+periodic. As a result, you might notice that the output contains
+an extra note at the beginning, which wraps around from the end.
+</em></span><a id="hevea_default417"></a></p><p><span class="c003"><em>Fortunately, there is a standard solution to this problem. If you
+add enough zeros to the end of the signal before computing the DFT,
+you can avoid the wrap-around effect. 
+</em></span><a id="hevea_default418"></a></p><p><span class="c003"><em>Modify the example in </em></span><span class="c003"><em><span class="c002">chap10.ipynb</span></em></span><span class="c003"><em> and confirm that zero-padding
+eliminates the extra note at the beginning of the output.
+</em></span></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;2</span></span><span class="c003">&nbsp;&nbsp;<em>
+The Open AIR library provides a “centralized... on-line resource for
+anyone interested in auralization and acoustical impulse response
+data” (</em></span><a href="http://www.openairlib.net/"><span class="c003"><em><span class="c002">http://www.openairlib.net</span></em></span></a><span class="c003"><em>). Browse their collection
+of impulse response data and download one that sounds interesting.
+Find a short recording that has the same sample rate as the impulse
+response you downloaded.</em></span><p><span class="c003"><em>Simulate the sound of your recording in the space where the impulse
+response was measured, computed two ways: by convolving the recording
+with the impulse response and by computing the filter that corresponds
+to the impulse response and multiplying by the DFT of the recording.
+</em></span><a id="hevea_default419"></a></p></div><span class="c003">
+</span><hr class="footnoterule"><dl class="thefootnotes"><dt class="dt-thefootnotes"><span class="c003">
+</span><a id="note4" href="http://greenteapress.com/thinkdsp/html/thinkdsp011.html#text4"><span class="c003">1</span></a></dt><dd class="dd-thefootnotes"><span class="c003"><div class="footnotetext">My presentation here
+follows <a href="http://en.wikipedia.org/wiki/LTI_system_theory"><span class="c002">http://en.wikipedia.org/wiki/LTI_system_theory</span></a>.</div>
+</span></dd></dl>
+</td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./LTI systems_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./LTI systems_files/q"></a><img class="c001" src="./LTI systems_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./LTI systems_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./LTI systems_files/q(1)"></a><img class="c001" src="./LTI systems_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./LTI systems_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./LTI systems_files/q(2)"></a><img class="c001" src="./LTI systems_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./LTI systems_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./LTI systems_files/q(3)"></a><img class="c001" src="./LTI systems_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./LTI systems_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./LTI systems_files/q(4)"></a><img class="c001" src="./LTI systems_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./LTI systems_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./LTI systems_files/q(5)"></a><img class="c001" src="./LTI systems_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp010.html"><img src="./LTI systems_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./LTI systems_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp012.html"><img src="./LTI systems_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./LTI systems_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>

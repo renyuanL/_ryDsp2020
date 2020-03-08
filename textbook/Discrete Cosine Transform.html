@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp007.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./Discrete Cosine Transform_files/thinkdsp.css">
+<title>Discrete Cosine Transform</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html"><img src="./Discrete Cosine Transform_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Discrete Cosine Transform_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html"><img src="./Discrete Cosine Transform_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec45"><span class="c003">Chapter&nbsp;6&nbsp;&nbsp;Discrete Cosine Transform</span></h1>
+<p><span class="c003">
+</span><a id="dct"></a></p><p><span class="c003">The topic of this chapter is the </span><span class="c003"><span class="c007">Discrete Cosine
+Transform</span></span><span class="c003"> (DCT), which is used in MP3 and related formats for
+compressing music; JPEG and similar formats for images; and the MPEG
+family of formats for video.
+</span><a id="hevea_default223"></a><span class="c003">
+</span><a id="hevea_default224"></a></p><p><span class="c003">DCT is similar in many ways to the Discrete Fourier Transform (DFT),
+which we have been using for spectral analysis.
+Once we learn how DCT works, it will be easier to explain DFT.
+</span><a id="hevea_default225"></a><span class="c003">
+</span><a id="hevea_default226"></a></p><p><span class="c003">Here are the steps to get there:</span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">We’ll start with the synthesis problem: given a set of frequency
+components and their amplitudes, how can we construct a wave?
+</span><a id="hevea_default227"></a></li><li class="li-enumerate"><span class="c003">Next we’ll rewrite the synthesis problem using NumPy arrays.
+This move is good for performance, and also provides insight
+for the next step.</span></li><li class="li-enumerate"><span class="c003">We’ll look at the analysis problem: given a signal and a
+set of frequencies, how can we find the amplitude of each frequency
+component? We’ll start with a solution that is conceptually simple
+but slow.
+</span><a id="hevea_default228"></a></li><li class="li-enumerate"><span class="c003">Finally, we’ll use some principles from linear algebra to find a
+more efficient algorithm. If you already know linear algebra,
+that’s great, but I’ll explain what you need as we go.</span></li></ol><p><span class="c003">The code for this chapter is in </span><span class="c003"><span class="c002">chap06.ipynb</span></span><span class="c003"> which is in the repository for this book (see
+Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp001.html#code"><span class="c003">0.2</span></a><span class="c003">).
+You can also view it at </span><a href="http://tinyurl.com/thinkdsp06"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp06</span></span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec46"><span class="c003">6.1&nbsp;&nbsp;Synthesis</span></h2>
+<p><span class="c003">
+</span><a id="synth1"></a></p><p><span class="c003">Suppose I give you a list of amplitudes and a list of frequencies,
+and ask you to construct a signal that is the sum of these frequency
+components. Using objects in the </span><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> module, there is
+a simple way to perform this operation, which is called </span><span class="c003"><span class="c007">synthesis</span></span><span class="c003">:
+</span><a id="hevea_default229"></a></p><pre class="verbatim"><span class="c003">def synthesize1(amps, fs, ts):
+    components = [thinkdsp.CosSignal(freq, amp)
+                  for amp, freq in zip(amps, fs)]
+    signal = thinkdsp.SumSignal(*components)
+
+    ys = signal.evaluate(ts)
+    return ys
+</span></pre><p><span class="c003"><span class="c002">amps</span></span><span class="c003"> is a list of amplitudes, </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> is the list
+of frequencies, and </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> is the sequence
+of times where the signal should be evaluated.</span></p><p><span class="c003"><span class="c002">components</span></span><span class="c003"> is a list of </span><span class="c003"><span class="c002">CosSignal</span></span><span class="c003"> objects, one for
+each amplitude-frequency pair. </span><span class="c003"><span class="c002">SumSignal</span></span><span class="c003"> represents the
+sum of these frequency components.
+</span><a id="hevea_default230"></a></p><p><span class="c003">Finally, </span><span class="c003"><span class="c002">evaluate</span></span><span class="c003"> computes the value of the signal at each
+time in </span><span class="c003"><span class="c002">ts</span></span><span class="c003">.</span></p><p><span class="c003">We can test this function like this:</span></p><pre class="verbatim"><span class="c003">    amps = np.array([0.6, 0.25, 0.1, 0.05])
+    fs = [100, 200, 300, 400]
+    framerate = 11025
+
+    ts = np.linspace(0, 1, framerate)
+    ys = synthesize1(amps, fs, ts)
+    wave = thinkdsp.Wave(ys, framerate)
+</span></pre><p><span class="c003">This example makes a signal that contains a fundamental frequency at
+100 Hz and three harmonics (100 Hz is a sharp G2). It renders the
+signal for one second at 11,025 frames per second and puts the results
+into a Wave object.</span></p><p><span class="c003">Conceptually, synthesis is pretty simple. But in this form it doesn’t
+help much with </span><span class="c003"><span class="c007">analysis</span></span><span class="c003">, which is the inverse problem: given the
+wave, how do we identify the frequency components and their amplitudes?
+</span><a id="hevea_default231"></a></p><span class="c003">
+</span><h2 class="section" id="sec47"><span class="c003">6.2&nbsp;&nbsp;Synthesis with arrays</span></h2>
+<p><span class="c003">
+</span><a id="synthesis"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Discrete Cosine Transform_files/thinkdsp035.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 6.1: Synthesis with arrays.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.synthesis"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Here’s another way to write </span><span class="c003"><span class="c002">synthesize</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">def synthesize2(amps, fs, ts):
+    args = np.outer(ts, fs)
+    M = np.cos(PI2 * args)
+    ys = np.dot(M, amps)
+    return ys
+</span></pre><p><span class="c003">This function looks very different, but it does the same thing.
+Let’s see how it works:</span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003"><span class="c002">np.outer</span></span><span class="c003"> computes the </span><span class="c003"><span class="c007">outer product</span></span><span class="c003"> of </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and
+</span><span class="c003"><span class="c002">fs</span></span><span class="c003">. The result is an array with one row for each element
+of </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and one column for each element of </span><span class="c003"><span class="c002">fs</span></span><span class="c003">. Each
+element in the array is the product of a frequency and a time, </span><span class="c003"><span class="c006">f</span></span><span class="c003">
+</span><span class="c003"><span class="c006">t</span></span><span class="c003">.
+</span><a id="hevea_default232"></a></li><li class="li-enumerate"><span class="c003">We multiply </span><span class="c003"><span class="c002">args</span></span><span class="c003"> by </span><span class="c003">2 &#960;</span><span class="c003"> and apply </span><span class="c003"><span class="c002">cos</span></span><span class="c003">, so each
+element of the result is </span><span class="c003">cos</span><span class="c003">(2 &#960; </span><span class="c003"><span class="c006">f</span></span><span class="c003"> </span><span class="c003"><span class="c006">t</span></span><span class="c003">)</span><span class="c003">. Since the </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> run
+down the columns, each column contains a cosine signal at a
+particular frequency, evaluated at a sequence of times.</span></li><li class="li-enumerate"><span class="c003"><span class="c002">np.dot</span></span><span class="c003"> multiplies each row of </span><span class="c003"><span class="c002">M</span></span><span class="c003"> by </span><span class="c003"><span class="c002">amps</span></span><span class="c003">,
+element-wise, and then adds up the products. In terms of linear
+algebra, we are multiplying a matrix, </span><span class="c003"><span class="c002">M</span></span><span class="c003">, by a vector, </span><span class="c003"><span class="c002">amps</span></span><span class="c003">. In terms of signals, we are computing the weighted sum
+of frequency components.
+</span><a id="hevea_default233"></a></li></ol><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#fig.synthesis"><span class="c003">6.1</span></a><span class="c003"> shows the structure of this computation.
+Each row of the matrix, </span><span class="c003"><span class="c002">M</span></span><span class="c003">, corresponds to a time 
+from 0.0 to 1.0 seconds; </span><span class="c003"><span class="c006">t</span></span><sub><span class="c003"><span class="c006">n</span></span></sub><span class="c003"> is the time of the </span><span class="c003"><span class="c006">n</span></span><span class="c003">th row.
+Each column corresponds to a frequency from
+100 to 400 Hz; </span><span class="c003"><span class="c006">f</span></span><sub><span class="c003"><span class="c006">k</span></span></sub><span class="c003"> is the frequency of the </span><span class="c003"><span class="c006">k</span></span><span class="c003">th column.
+</span><a id="hevea_default234"></a></p><p><span class="c003">I labeled the </span><span class="c003"><span class="c006">n</span></span><span class="c003">th row with the letters </span><span class="c003"><span class="c006">a</span></span><span class="c003"> through </span><span class="c003"><span class="c006">d</span></span><span class="c003">; as an
+example, the value of </span><span class="c003"><span class="c006">a</span></span><span class="c003"> is </span><span class="c003">cos</span><span class="c003">[2 &#960; (100) </span><span class="c003"><span class="c006">t</span></span><sub><span class="c003"><span class="c006">n</span></span></sub><span class="c003">]</span><span class="c003">.</span></p><p><span class="c003">The result of the dot product, </span><span class="c003"><span class="c002">ys</span></span><span class="c003">, is a vector with one element
+for each row of </span><span class="c003"><span class="c002">M</span></span><span class="c003">. The </span><span class="c003"><span class="c006">n</span></span><span class="c003">th element, labeled </span><span class="c003"><span class="c006">e</span></span><span class="c003">, is the sum
+of products:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><span class="c003">&nbsp;=&nbsp;0.6&nbsp;</span><span class="c003"><span class="c006">a</span></span><span class="c003">&nbsp;+&nbsp;0.25&nbsp;</span><span class="c003"><span class="c006">b</span></span><span class="c003">&nbsp;+&nbsp;0.1&nbsp;</span><span class="c003"><span class="c006">c</span></span><span class="c003">&nbsp;+&nbsp;0.05&nbsp;</span><span class="c003"><span class="c006">d</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+And likewise with the other elements of </span><span class="c003"><span class="c002">ys</span></span><span class="c003">. So each element
+of </span><span class="c003"><span class="c002">y</span></span><span class="c003"> is the sum of four frequency components, evaluated at
+a point in time, and multiplied by the corresponding amplitudes.
+And that’s exactly what we wanted.</span></p><p><span class="c003">We can use the code from the previous section to check that the two
+versions of </span><span class="c003"><span class="c002">synthesize</span></span><span class="c003"> produce the same results.</span></p><pre class="verbatim"><span class="c003">ys1 = synthesize1(amps, fs, ts)
+ys2 = synthesize2(amps, fs, ts)
+max(abs(ys1 - ys2))
+</span></pre><p><span class="c003">The biggest difference between </span><span class="c003"><span class="c002">ys1</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ys2</span></span><span class="c003"> is about </span><span class="c003"><span class="c002">1e-13</span></span><span class="c003">, which is what we expect due to floating-point errors.</span></p><p><span class="c003">Writing this computation in terms of linear algebra makes the code
+smaller and faster. Linear algebra
+provides concise notation for operations on matrices and vectors. For
+example, we could write </span><span class="c003"><span class="c002">synthesize</span></span><span class="c003"> like this:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><table class="c000 cellpading0"><tbody><tr><td class="c011"><span class="c003"><span class="c006">M</span></span></td><td class="c009"><span class="c003">=</span></td><td class="c010"><span class="c003">cos</span><span class="c003">(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">t</span></span><span class="c003">&nbsp;&#8855;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">)&nbsp;</span></td></tr>
+<tr><td class="c011"><span class="c003"><span class="c006">y</span></span></td><td class="c009"><span class="c003">=</span></td><td class="c010"><span class="c003"><span class="c006">M</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">a</span></span><span class="c003">
+</span></td></tr>
+</tbody></table></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">a</span></span><span class="c003"> is a vector of amplitudes,
+</span><span class="c003"><span class="c006">t</span></span><span class="c003"> is a vector of times, </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is a vector of frequencies, and
+</span><span class="c003">&#8855;</span><span class="c003"> is the symbol for the outer product of two vectors.
+</span><a id="hevea_default235"></a></p><span class="c003">
+</span><h2 class="section" id="sec48"><span class="c003">6.3&nbsp;&nbsp;Analysis</span></h2>
+<p><span class="c003">
+</span><a id="analysis"></a></p><p><span class="c003">Now we are ready to solve the analysis problem. Suppose I give you
+a wave and tell you that it is the sum of cosines with a given set
+of frequencies. How would you find the amplitude for each frequency
+component? In other words, given </span><span class="c003"><span class="c002">ys</span></span><span class="c003">, </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003">,
+can you recover </span><span class="c003"><span class="c002">amps</span></span><span class="c003">?</span></p><p><span class="c003">In terms of linear algebra, the first step is the same as for
+synthesis: we compute </span><span class="c003"><span class="c006">M</span></span><span class="c003"> = </span><span class="c003">cos</span><span class="c003">(2 &#960; </span><span class="c003"><span class="c006">t</span></span><span class="c003"> &#8855; </span><span class="c003"><span class="c006">f</span></span><span class="c003">)</span><span class="c003">. Then we want
+to find </span><span class="c003"><span class="c006">a</span></span><span class="c003"> so that </span><span class="c003"><span class="c006">y</span></span><span class="c003"> = </span><span class="c003"><span class="c006">M</span></span><span class="c003"> </span><span class="c003"><span class="c006">a</span></span><span class="c003">; in other words, we want to solve a
+linear system. NumPy provides </span><span class="c003"><span class="c002">linalg.solve</span></span><span class="c003">, which does
+exactly that.</span></p><p><span class="c003">Here’s what the code looks like:</span></p><pre class="verbatim"><span class="c003">def analyze1(ys, fs, ts):
+    args = np.outer(ts, fs)
+    M = np.cos(PI2 * args)
+    amps = np.linalg.solve(M, ys)
+    return amps
+</span></pre><p><span class="c003">The first two lines use </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> to build the
+matrix, </span><span class="c003"><span class="c002">M</span></span><span class="c003">. Then </span><span class="c003"><span class="c002">np.linalg.solve</span></span><span class="c003"> computes </span><span class="c003"><span class="c002">amps</span></span><span class="c003">.</span></p><p><span class="c003">But there’s a hitch. In general we can only solve a system of linear
+equations if the matrix is square; that is, the number of equations
+(rows) is the same as the number of unknowns (columns).
+</span><a id="hevea_default236"></a></p><p><span class="c003">In this example, we have only 4 frequencies, but we evaluated the
+signal at 11,025 times. So we have many more equations than unknowns.</span></p><p><span class="c003">In general if </span><span class="c003"><span class="c002">ys</span></span><span class="c003">
+contains more than 4 elements, it is unlikely that we can analyze it
+using only 4 frequencies.</span></p><p><span class="c003">But in this case, we know that the </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> were actually generated by
+adding only 4 frequency components, so we can use any 4 values from
+the wave array to recover </span><span class="c003"><span class="c002">amps</span></span><span class="c003">.
+</span><a id="hevea_default237"></a></p><p><span class="c003">For simplicity, I’ll use the first 4 samples from the signal.
+Using the values of </span><span class="c003"><span class="c002">ys</span></span><span class="c003">, </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> from
+the previous section, we can run </span><span class="c003"><span class="c002">analyze1</span></span><span class="c003"> like this:</span></p><pre class="verbatim"><span class="c003">n = len(fs)
+amps2 = analyze1(ys[:n], fs, ts[:n])
+</span></pre><p><span class="c003">And sure enough, </span><span class="c003"><span class="c002">amps2</span></span><span class="c003"> is</span></p><pre class="verbatim"><span class="c003">[ 0.6   0.25  0.1   0.05 ]
+</span></pre><p><span class="c003">This algorithm works, but it is slow. Solving a linear
+system of equations takes time proportional to </span><span class="c003"><span class="c006">n</span></span><sup><span class="c003">3</span></sup><span class="c003">, where </span><span class="c003"><span class="c006">n</span></span><span class="c003"> is
+the number of columns in </span><span class="c003"><span class="c006">M</span></span><span class="c003">. We can do better.</span></p><span class="c003">
+</span><h2 class="section" id="sec49"><span class="c003">6.4&nbsp;&nbsp;Orthogonal matrices</span></h2>
+<p><span class="c003">One way to solve linear systems is by inverting matrices. The
+inverse of a square matrix </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is written </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003">, and it has the property
+that </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003"><span class="c006">M</span></span><span class="c003"> = </span><span class="c003"><span class="c006">I</span></span><span class="c003">. </span><span class="c003"><span class="c006">I</span></span><span class="c003"> is the identity matrix, which has
+the value 1 on all diagonal elements and 0 everywhere else.
+</span><a id="hevea_default238"></a><span class="c003">
+</span><a id="hevea_default239"></a><span class="c003">
+</span><a id="hevea_default240"></a></p><p><span class="c003">So, to solve the equation </span><span class="c003"><span class="c006">y</span></span><span class="c003"> = </span><span class="c003"><span class="c006">Ma</span></span><span class="c003">, we can multiply both sides by
+</span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003">, which yields:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003"><span class="c006">y</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003">&nbsp;</span><span class="c003"><span class="c006">M</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">a</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+On the right side, we can replace </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003"><span class="c006">M</span></span><span class="c003"> with </span><span class="c003"><span class="c006">I</span></span><span class="c003">:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003"><span class="c006">y</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">I</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">a</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+If we multiply </span><span class="c003"><span class="c006">I</span></span><span class="c003"> by any vector </span><span class="c003"><span class="c006">a</span></span><span class="c003">, the result is </span><span class="c003"><span class="c006">a</span></span><span class="c003">, so 
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003"><span class="c006">y</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">a</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+This implies that if we can compute </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003"> efficiently, we can find
+</span><span class="c003"><span class="c006">a</span></span><span class="c003"> with a simple matrix multiplication (using </span><span class="c003"><span class="c002">np.dot</span></span><span class="c003">). That
+takes time proportional to </span><span class="c003"><span class="c006">n</span></span><sup><span class="c003">2</span></sup><span class="c003">, which is better than </span><span class="c003"><span class="c006">n</span></span><sup><span class="c003">3</span></sup><span class="c003">.</span></p><p><span class="c003">Inverting a matrix is slow, in general, but some special cases are
+faster. In particular, if </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is </span><span class="c003"><span class="c007">orthogonal</span></span><span class="c003">, the inverse of </span><span class="c003"><span class="c006">M</span></span><span class="c003">
+is just the transpose of </span><span class="c003"><span class="c006">M</span></span><span class="c003">, written </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003"><span class="c006">T</span></span></sup><span class="c003">. In NumPy
+transposing an array is a constant-time operation. It
+doesn’t actually move the elements of the array; instead, it creates a
+“view” that changes the way the elements are accessed.</span></p><p><span class="c003">Again, a matrix is orthogonal if its transpose is also its inverse;
+that is, </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003"><span class="c006">T</span></span></sup><span class="c003"> = </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">&#8722;1</span></sup><span class="c003">. That implies that </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003"><span class="c006">T</span></span></sup><span class="c003"><span class="c006">M</span></span><span class="c003"> = </span><span class="c003"><span class="c006">I</span></span><span class="c003">, which means we
+can check whether a matrix is orthogonal by computing </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003"><span class="c006">T</span></span></sup><span class="c003"><span class="c006">M</span></span><span class="c003">.
+</span><a id="hevea_default241"></a></p><p><span class="c003">So let’s see what the matrix looks like in </span><span class="c003"><span class="c002">synthesize2</span></span><span class="c003">. In 
+the previous example, </span><span class="c003"><span class="c006">M</span></span><span class="c003"> has 11,025 rows, so it might be a good idea
+to work with a smaller example:</span></p><pre class="verbatim"><span class="c003">def test1():
+    amps = np.array([0.6, 0.25, 0.1, 0.05])
+    N = 4.0
+    time_unit = 0.001
+    ts = np.arange(N) / N * time_unit
+    max_freq = N / time_unit / 2
+    fs = np.arange(N) / N * max_freq
+    ys = synthesize2(amps, fs, ts)
+</span></pre><p><span class="c003"><span class="c002">amps</span></span><span class="c003"> is the same vector of amplitudes we saw before.
+Since we have 4 frequency components, we’ll sample the signal
+at 4 points in time. That way, </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is square.
+</span><a id="hevea_default242"></a></p><p><span class="c003"><span class="c002">ts</span></span><span class="c003"> is a vector of equally spaced sample times in the range from
+0 to 1 time unit. I chose the time unit to be 1 millisecond, but it
+is an arbitrary choice, and we will see in a minute that it drops out
+of the computation anyway.</span></p><p><span class="c003">Since the frame rate is </span><span class="c003"><span class="c006">N</span></span><span class="c003"> samples per time unit, the Nyquist
+frequency is </span><code><span class="c003">N / time_unit / 2</span></code><span class="c003">, which is 2000 Hz in this
+example. So </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> is a vector of equally spaced frequencies
+between 0 and 2000 Hz.</span></p><p><span class="c003">With these values of </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003">, the matrix, </span><span class="c003"><span class="c006">M</span></span><span class="c003">, is:</span></p><pre class="verbatim"><span class="c003">[[ 1.     1.     1.     1.   ]
+ [ 1.     0.707  0.    -0.707]
+ [ 1.     0.    -1.    -0.   ]
+ [ 1.    -0.707 -0.     0.707]]
+</span></pre><p><span class="c003">You might recognize 0.707 as an approximation of </span><span class="c003">&#8730;</span><span class="c003"><span class="c012">2</span></span><span class="c003">/2</span><span class="c003">,
+which is </span><span class="c003">cos</span><span class="c003">&#960;/4</span><span class="c003">. You also might notice that this matrix
+is </span><span class="c003"><span class="c007">symmetric</span></span><span class="c003">, which means that the element at </span><span class="c003">(</span><span class="c003"><span class="c006">j</span></span><span class="c003">, </span><span class="c003"><span class="c006">k</span></span><span class="c003">)</span><span class="c003"> always
+equals the element at </span><span class="c003">(</span><span class="c003"><span class="c006">k</span></span><span class="c003">, </span><span class="c003"><span class="c006">j</span></span><span class="c003">)</span><span class="c003">. This implies that </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is its own
+transpose; that is, </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003"><span class="c006">T</span></span></sup><span class="c003"> = </span><span class="c003"><span class="c006">M</span></span><span class="c003">.
+</span><a id="hevea_default243"></a></p><p><span class="c003">But sadly, </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is not orthogonal. If we compute </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003"><span class="c006">T</span></span></sup><span class="c003"><span class="c006">M</span></span><span class="c003">, we get:</span></p><pre class="verbatim"><span class="c003">[[ 4.  1. -0.  1.]
+ [ 1.  2.  1. -0.]
+ [-0.  1.  2.  1.]
+ [ 1. -0.  1.  2.]]
+</span></pre><p><span class="c003">And that’s not the identity matrix.</span></p><span class="c003">
+</span><h2 class="section" id="sec50"><span class="c003">6.5&nbsp;&nbsp;DCT-IV</span></h2>
+<p><span class="c003">
+</span><a id="dctiv"></a></p><p><span class="c003">But if we choose </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> carefully,
+we can make </span><span class="c003"><span class="c006">M</span></span><span class="c003"> orthogonal. There are several ways to do it, which
+is why there are several versions of the Discrete Cosine Transform (DCT).
+</span><a id="hevea_default244"></a></p><p><span class="c003">One simple option is to shift </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> by a half unit.
+This version is called DCT-IV, where “IV” is a roman numeral
+indicating that this is the fourth of eight versions of the DCT.</span></p><p><span class="c003">Here’s an updated version of </span><span class="c003"><span class="c002">test1</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">def test2():
+    amps = np.array([0.6, 0.25, 0.1, 0.05])
+    N = 4.0
+    ts = (0.5 + np.arange(N)) / N
+    fs = (0.5 + np.arange(N)) / 2
+    ys = synthesize2(amps, fs, ts)
+</span></pre><p><span class="c003">If you compare this to the previous version, you’ll notice
+two changes. First, I added 0.5 to </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003">.
+Second, I canceled out </span><code><span class="c003">time_units</span></code><span class="c003">, which simplifies
+the expression for </span><span class="c003"><span class="c002">fs</span></span><span class="c003">.</span></p><p><span class="c003">With these values, </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is</span></p><pre class="verbatim"><span class="c003">[[ 0.981  0.831  0.556  0.195]
+ [ 0.831 -0.195 -0.981 -0.556]
+ [ 0.556 -0.981  0.195  0.831]
+ [ 0.195 -0.556  0.831 -0.981]]
+</span></pre><p><span class="c003">And </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003"><span class="c006">T</span></span></sup><span class="c003"><span class="c006">M</span></span><span class="c003"> is</span></p><pre class="verbatim"><span class="c003">[[ 2.  0.  0.  0.]
+ [ 0.  2. -0.  0.]
+ [ 0. -0.  2. -0.]
+ [ 0.  0. -0.  2.]]
+</span></pre><p><span class="c003">Some of the off-diagonal elements are displayed as -0, which means
+that the floating-point representation is a small negative number.
+This matrix is very close to </span><span class="c003">2</span><span class="c003"><span class="c006">I</span></span><span class="c003">, which means </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is almost
+orthogonal; it’s just off by a factor of 2. And for our purposes,
+that’s good enough.</span></p><p><span class="c003">Because </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is symmetric and (almost) orthogonal, the inverse of </span><span class="c003"><span class="c006">M</span></span><span class="c003">
+is just </span><span class="c003"><span class="c006">M</span></span><span class="c003">/2</span><span class="c003">. Now we can write a more efficient version of </span><span class="c003"><span class="c002">analyze</span></span><span class="c003">:
+</span><a id="hevea_default245"></a></p><pre class="verbatim"><span class="c003">def analyze2(ys, fs, ts):
+    args = np.outer(ts, fs)
+    M = np.cos(PI2 * args)
+    amps = np.dot(M, ys) / 2
+    return amps
+</span></pre><p><span class="c003">Instead of using </span><span class="c003"><span class="c002">np.linalg.solve</span></span><span class="c003">, we just multiply
+by </span><span class="c003"><span class="c006">M</span></span><span class="c003">/2</span><span class="c003">.</span></p><p><span class="c003">Combining </span><span class="c003"><span class="c002">test2</span></span><span class="c003"> and </span><span class="c003"><span class="c002">analyze2</span></span><span class="c003">, we can write an
+implementation of DCT-IV:</span></p><pre class="verbatim"><span class="c003">def dct_iv(ys):
+    N = len(ys)
+    ts = (0.5 + np.arange(N)) / N
+    fs = (0.5 + np.arange(N)) / 2
+    args = np.outer(ts, fs)
+    M = np.cos(PI2 * args)
+    amps = np.dot(M, ys) / 2
+    return amps
+</span></pre><p><span class="c003">Again, </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> is the wave array. We don’t have to pass
+</span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> as parameters; </span><code><span class="c003">dct_iv</span></code><span class="c003"> can
+figure them out based on </span><span class="c003"><span class="c002">N</span></span><span class="c003">, the length of </span><span class="c003"><span class="c002">ys</span></span><span class="c003">.</span></p><p><span class="c003">If we’ve got it right, this function should solve the analysis
+problem; that is, given </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> it should be able to recover
+</span><span class="c003"><span class="c002">amps</span></span><span class="c003">. We can test it like this.</span></p><pre class="verbatim"><span class="c003">amps = np.array([0.6, 0.25, 0.1, 0.05])
+N = 4.0
+ts = (0.5 + np.arange(N)) / N
+fs = (0.5 + np.arange(N)) / 2
+ys = synthesize2(amps, fs, ts)
+amps2 = dct_iv(ys)
+max(abs(amps - amps2))
+</span></pre><p><span class="c003">Starting with </span><span class="c003"><span class="c002">amps</span></span><span class="c003">, we synthesize a wave array, then use
+</span><code><span class="c003">dct_iv</span></code><span class="c003"> to compute </span><span class="c003"><span class="c002">amps2</span></span><span class="c003">. The biggest
+difference between </span><span class="c003"><span class="c002">amps</span></span><span class="c003"> and </span><span class="c003"><span class="c002">amps2</span></span><span class="c003"> is about </span><span class="c003"><span class="c002">1e-16</span></span><span class="c003">,
+which is what we expect due to floating-point errors.
+</span><a id="hevea_default246"></a></p><span class="c003">
+</span><h2 class="section" id="sec51"><span class="c003">6.6&nbsp;&nbsp;Inverse DCT</span></h2>
+<p><span class="c003">Finally, notice that </span><span class="c003"><span class="c002">analyze2</span></span><span class="c003"> and </span><span class="c003"><span class="c002">synthesize2</span></span><span class="c003"> are almost
+identical. The only difference is that </span><span class="c003"><span class="c002">analyze2</span></span><span class="c003"> divides the
+result by 2. We can use this insight to compute the inverse DCT:
+</span><a id="hevea_default247"></a></p><pre class="verbatim"><span class="c003">def inverse_dct_iv(amps):
+    return dct_iv(amps) * 2
+</span></pre><p><code><span class="c003">inverse_dct_iv</span></code><span class="c003"> solves the synthesis problem: it
+takes the vector of amplitudes and returns
+the wave array, </span><span class="c003"><span class="c002">ys</span></span><span class="c003">. We can test it by starting
+with </span><span class="c003"><span class="c002">amps</span></span><span class="c003">, applying </span><code><span class="c003">inverse_dct_iv</span></code><span class="c003"> and </span><code><span class="c003">dct_iv</span></code><span class="c003">,
+and testing that we get back what we started with.</span></p><pre class="verbatim"><span class="c003">amps = [0.6, 0.25, 0.1, 0.05]
+ys = inverse_dct_iv(amps)
+amps2 = dct_iv(ys)
+max(abs(amps - amps2))
+</span></pre><p><span class="c003">Again, the biggest difference is about </span><span class="c003"><span class="c002">1e-16</span></span><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec52"><span class="c003">6.7&nbsp;&nbsp;The Dct class</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Discrete Cosine Transform_files/thinkdsp036.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 6.2: DCT of a triangle signal at 400 Hz, sampled at 10 kHz.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.dct1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> provides a Dct class that encapsulates the
+DCT in the same way the Spectrum class encapsulates the FFT.
+To make a Dct object, you can invoke </span><code><span class="c003">make_dct</span></code><span class="c003"> on a Wave.
+</span><a id="hevea_default248"></a></p><pre class="verbatim"><span class="c003">signal = thinkdsp.TriangleSignal(freq=400)
+wave = signal.make_wave(duration=1.0, framerate=10000)
+dct = wave.make_dct()
+dct.plot()
+</span></pre><p><span class="c003">The result is the DCT of a triangle wave at 400 Hz, shown in
+Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#fig.dct1"><span class="c003">6.2</span></a><span class="c003">. The values of the DCT can be positive or negative;
+a negative value in the DCT corresponds to a negated cosine or,
+equivalently, to a cosine shifted by 180 degrees.
+</span><a id="hevea_default249"></a></p><p><code><span class="c003">make_dct</span></code><span class="c003"> uses DCT-II, which is the most common type of DCT,
+provided by </span><span class="c003"><span class="c002">scipy.fftpack</span></span><span class="c003">.</span></p><pre class="verbatim"><span class="c003">import scipy.fftpack
+
+# class Wave:
+    def make_dct(self):
+        N = len(self.ys)
+        hs = scipy.fftpack.dct(self.ys, type=2)
+        fs = (0.5 + np.arange(N)) / 2
+        return Dct(hs, fs, self.framerate)
+</span></pre><p><span class="c003">The results from </span><span class="c003"><span class="c002">dct</span></span><span class="c003"> are stored in </span><span class="c003"><span class="c002">hs</span></span><span class="c003">. The corresponding
+frequencies, computed as in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#dctiv"><span class="c003">6.5</span></a><span class="c003">, are stored in </span><span class="c003"><span class="c002">fs</span></span><span class="c003">.
+And then both are used to initialize the Dct object.</span></p><p><span class="c003">Dct provides </span><code><span class="c003">make_wave</span></code><span class="c003">, which performs the inverse DCT.
+We can test it like this:</span></p><pre class="verbatim"><span class="c003">wave2 = dct.make_wave()
+max(abs(wave.ys-wave2.ys))
+</span></pre><p><span class="c003">The biggest difference between </span><span class="c003"><span class="c002">ys1</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ys2</span></span><span class="c003"> is about </span><span class="c003"><span class="c002">1e-16</span></span><span class="c003">, which is what we expect due to floating-point errors.</span></p><p><code><span class="c003">make_wave</span></code><span class="c003"> uses </span><span class="c003"><span class="c002">scipy.fftpack.idct</span></span><span class="c003">: </span></p><pre class="verbatim"><span class="c003"># class Dct
+    def make_wave(self):
+        n = len(self.hs)
+        ys = scipy.fftpack.idct(self.hs, type=2) / 2 / n
+        return Wave(ys, framerate=self.framerate) 
+</span></pre><p><span class="c003">Be default, the inverse DCT doesn’t normalize the result, so we have
+to divide through by </span><span class="c003">2</span><span class="c003"><span class="c006">N</span></span><span class="c003">.
+</span><a id="hevea_default250"></a></p><span class="c003">
+</span><h2 class="section" id="sec53"><span class="c003">6.8&nbsp;&nbsp;Exercises</span></h2>
+<p><span class="c003">For the following exercises, I provide some starter code in
+</span><span class="c003"><span class="c002">chap06starter.ipynb</span></span><span class="c003">.
+Solutions are in </span><span class="c003"><span class="c002">chap06soln.ipynb</span></span><span class="c003">.</span></p><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;1</span></span><span class="c003">&nbsp;&nbsp;<em>
+In this chapter I claim that </em></span><span class="c003"><em><span class="c002">analyze1</span></em></span><span class="c003"><em> takes time proportional
+to </em></span><span class="c003"><span class="c006">n</span></span><sup><span class="c003">3</span></sup><span class="c003"><em> and </em></span><span class="c003"><em><span class="c002">analyze2</span></em></span><span class="c003"><em> takes time proportional to </em></span><span class="c003"><span class="c006">n</span></span><sup><span class="c003">2</span></sup><span class="c003"><em>. To
+see if that’s true, run them on a range of input sizes and time
+them. In Jupyter, you can use the “magic command” </em></span><code><span class="c003"><em>%timeit</em></span></code><span class="c003"><em>.</em></span><p><span class="c003"><em>If you plot run time versus input size on a log-log scale, you
+should get a straight line with slope 3 for </em></span><span class="c003"><em><span class="c002">analyze1</span></em></span><span class="c003"><em> and
+slope 2 for </em></span><span class="c003"><em><span class="c002">analyze2</span></em></span><span class="c003"><em>.</em></span></p><p><span class="c003"><em>You also might want to test </em></span><code><span class="c003"><em>dct_iv</em></span></code><span class="c003"><em>
+and </em></span><span class="c003"><em><span class="c002">scipy.fftpack.dct</span></em></span><span class="c003"><em>.
+</em></span><a id="hevea_default251"></a></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;2</span></span><span class="c003">&nbsp;&nbsp;<em>
+One of the major applications of the DCT is compression for both
+sound and images. In its simplest form, DCT-based compression
+works like this:
+</em></span><a id="hevea_default252"></a><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003"><em>Break a long signal into segments.</em></span></li><li class="li-enumerate"><span class="c003"><em>Compute the DCT of each segment.</em></span></li><li class="li-enumerate"><span class="c003"><em>Identify frequency components with amplitudes so low they are
+inaudible, and remove them. Store only the frequencies and
+amplitudes that remain.</em></span></li><li class="li-enumerate"><span class="c003"><em>To play back the signal, load the frequencies and amplitudes
+for each segment and apply the inverse DCT.</em></span></li></ol><p><span class="c003"><em>Implement a version of this algorithm and apply it to a recording
+of music or speech. How many components can you eliminate before
+the difference is perceptible?</em></span></p><p><span class="c003"><em>In order to make this method practical, you need some way to store a
+sparse array; that is, an array where most of the elements are zero.
+NumPy provides several implementations of sparse arrays, which you can
+read about at
+</em></span><a href="http://docs.scipy.org/doc/scipy/reference/sparse.html"><span class="c003"><em><span class="c002">http://docs.scipy.org/doc/scipy/reference/sparse.html</span></em></span></a><span class="c003"><em>.
+</em></span><a id="hevea_default253"></a><span class="c003"><em>
+</em></span></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;3</span></span><span class="c003">&nbsp;&nbsp;<em>
+In the repository for this book you will find a Jupyter notebook
+called </em></span><code><span class="c003"><em>phase.ipynb</em></span></code><span class="c003"><em> that explores the effect of phase on sound
+perception.
+Read through this notebook and run the examples. 
+Choose another segment of sound and run the same experiments.
+Can you find any general relationships between the phase structure
+of a sound and how we perceive it?
+</em></span><a id="hevea_default254"></a></div><span class="c003">
+</span></td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./Discrete Cosine Transform_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./Discrete Cosine Transform_files/q"></a><img class="c001" src="./Discrete Cosine Transform_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./Discrete Cosine Transform_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./Discrete Cosine Transform_files/q(1)"></a><img class="c001" src="./Discrete Cosine Transform_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./Discrete Cosine Transform_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Discrete Cosine Transform_files/q(2)"></a><img class="c001" src="./Discrete Cosine Transform_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./Discrete Cosine Transform_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./Discrete Cosine Transform_files/q(3)"></a><img class="c001" src="./Discrete Cosine Transform_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./Discrete Cosine Transform_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./Discrete Cosine Transform_files/q(4)"></a><img class="c001" src="./Discrete Cosine Transform_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./Discrete Cosine Transform_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Discrete Cosine Transform_files/q(5)"></a><img class="c001" src="./Discrete Cosine Transform_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html"><img src="./Discrete Cosine Transform_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Discrete Cosine Transform_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html"><img src="./Discrete Cosine Transform_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Discrete Cosine Transform_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>

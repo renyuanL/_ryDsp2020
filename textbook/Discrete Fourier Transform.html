@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp008.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./Discrete Fourier Transform_files/thinkdsp.css">
+<title>Discrete Fourier Transform</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html"><img src="./Discrete Fourier Transform_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Discrete Fourier Transform_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html"><img src="./Discrete Fourier Transform_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec54"><span class="c003">Chapter&nbsp;7&nbsp;&nbsp;Discrete Fourier Transform</span></h1>
+<p><span class="c003">
+</span><a id="dft"></a></p><p><span class="c003">We’ve been using the Discrete Fourier Transform (DFT) since
+Chapter&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp002.html#sounds"><span class="c003">1</span></a><span class="c003">, but I haven’t explained how it works. Now is
+the time.
+</span><a id="hevea_default255"></a><span class="c003">
+</span><a id="hevea_default256"></a></p><p><span class="c003">If you understand the Discrete Cosine Transform (DCT), you will
+understand the DFT. The only difference is that instead of using the
+cosine function, we’ll use the complex exponential function. I’ll
+start by explaining complex exponentials, then I’ll follow the
+same progression as in Chapter&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#dct"><span class="c003">6</span></a><span class="c003">:</span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">We’ll start with the synthesis
+problem: given a set of frequency components and their amplitudes,
+how can we construct a signal? The synthesis problem is 
+equivalent to the inverse DFT.</span></li><li class="li-enumerate"><span class="c003">Then I’ll rewrite the synthesis problem in the form of matrix
+multiplication using NumPy arrays.</span></li><li class="li-enumerate"><span class="c003">Next we’ll solve the analysis problem, which is equivalent to
+the DFT: given a signal, how do we find the amplitude and phase
+offset of its frequency components?</span></li><li class="li-enumerate"><span class="c003">Finally, we’ll use linear algebra to find a more efficient way
+to compute the DFT.</span></li></ol><p><span class="c003">The code for this chapter is in </span><span class="c003"><span class="c002">chap07.ipynb</span></span><span class="c003">, which is in the
+repository for this book (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp001.html#code"><span class="c003">0.2</span></a><span class="c003">).
+You can also view it at </span><a href="http://tinyurl.com/thinkdsp07"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp07</span></span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec55"><span class="c003">7.1&nbsp;&nbsp;Complex exponentials</span></h2>
+<p><span class="c003">One of the more interesting moves in mathematics is the generalization
+of an operation from one type to another. For example, factorial is a
+function that operates on integers; the natural definition for
+factorial of </span><span class="c003"><span class="c006">n</span></span><span class="c003"> is the product of all integers from 1 to </span><span class="c003"><span class="c006">n</span></span><span class="c003">.</span></p><p><span class="c003">If you are of a certain inclination, you might wonder how to compute
+the factorial of a non-integer like 3.5. Since the natural definition
+doesn’t apply, you might look for other ways to compute the factorial
+function, ways that would work with non-integers.</span></p><p><span class="c003">In 1730, Leonhard Euler found one, a generalization of the factorial
+function that we know as the gamma function (see
+</span><a href="http://en.wikipedia.org/wiki/Gamma_function"><span class="c003"><span class="c002">http://en.wikipedia.org/wiki/Gamma_function</span></span></a><span class="c003">).
+</span><a id="hevea_default257"></a><span class="c003">
+</span><a id="hevea_default258"></a></p><p><span class="c003">Euler also found one of the most useful generalizations in applied
+mathematics, the complex exponential function.
+</span><a id="hevea_default259"></a></p><p><span class="c003">The natural definition of exponentiation is repeated multiplication.
+For example, </span><span class="c003">&#966;</span><sup><span class="c003">3</span></sup><span class="c003"> = &#966; · &#966; · &#966;</span><span class="c003">. But this
+definition doesn’t apply to non-integer exponents.</span></p><p><span class="c003">However, exponentiation can also be expressed as a power series:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><sup><span class="c003">&#966;</span></sup><span class="c003">=&nbsp;1&nbsp;+&nbsp;&#966;&nbsp;+&nbsp;&#966;</span><sup><span class="c003">2</span></sup><span class="c003">/2!&nbsp;+&nbsp;&#966;</span><sup><span class="c003">3</span></sup><span class="c003">/3!&nbsp;+&nbsp;...&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+This definition works with real numbers, imaginary numbers and, by a simple
+extension, with complex numbers. Applying this definition
+to a pure imaginary number, </span><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span><span class="c003">, we get
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span></sup><span class="c003">&nbsp;=&nbsp;1&nbsp;+&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;&nbsp;&#8722;&nbsp;&#966;</span><sup><span class="c003">2</span></sup><span class="c003">/2!&nbsp;&#8722;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span><sup><span class="c003">3</span></sup><span class="c003">/3!&nbsp;+&nbsp;...&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+By rearranging terms, we can show that this is equivalent to:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span></sup><span class="c003">&nbsp;=&nbsp;</span><span class="c003">cos</span><span class="c003">&#966;&nbsp;+&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003">sin</span><span class="c003">&#966;&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+You can see the derivation at
+</span><a href="http://en.wikipedia.org/wiki/Euler&#39;s_formula"><span class="c003"><span class="c002">http://en.wikipedia.org/wiki/Euler's_formula</span></span></a><span class="c003">.
+</span><a id="hevea_default260"></a><span class="c003">
+</span><a id="hevea_default261"></a></p><p><span class="c003">This formula
+implies that </span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span></sup><span class="c003"> is a complex number with magnitude 1; if you
+think of it as a point in the complex plane, it is always on the unit
+circle. And if you think of it as a vector, the angle in radians
+between the vector and the positive x-axis is the argument, </span><span class="c003">&#966;</span><span class="c003">.
+</span><a id="hevea_default262"></a></p><p><span class="c003">In the case where the exponent is a complex number, we have:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">a</span></span><span class="c003">&nbsp;+&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span></sup><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">a</span></span></sup><span class="c003">&nbsp;</span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span></sup><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">A</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span></sup><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">A</span></span><span class="c003"> is a real number that indicates amplitude and
+</span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&#966;</span></sup><span class="c003"> is a unit complex number that indicates angle.
+</span><a id="hevea_default263"></a><span class="c003">
+</span><a id="hevea_default264"></a></p><p><span class="c003">NumPy provides a version of </span><span class="c003"><span class="c002">exp</span></span><span class="c003"> that works with complex numbers:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; phi = 1.5
+&gt;&gt;&gt; z = np.exp(1j * phi)
+&gt;&gt;&gt; z
+(0.0707+0.997j)
+</span></pre><p><span class="c003">Python uses </span><span class="c003"><span class="c002">j</span></span><span class="c003"> to represent the imaginary unit, rather
+than </span><span class="c003"><span class="c002">i</span></span><span class="c003">. A number ending in </span><span class="c003"><span class="c002">j</span></span><span class="c003"> is considered imaginary,
+so </span><span class="c003"><span class="c002">1j</span></span><span class="c003"> is just </span><span class="c003"><span class="c006">i</span></span><span class="c003">.
+</span><a id="hevea_default265"></a></p><p><span class="c003">When the argument to </span><span class="c003"><span class="c002">np.exp</span></span><span class="c003"> is imaginary or complex, the
+result is a complex number; specifically, an </span><span class="c003"><span class="c002">np.complex128</span></span><span class="c003">,
+which is represented by two 64-bit floating-point numbers.
+In this example, the result is </span><span class="c003"><span class="c002">0.0707+0.997j</span></span><span class="c003">. 
+</span><a id="hevea_default266"></a></p><p><span class="c003">Complex numbers have attributes </span><span class="c003"><span class="c002">real</span></span><span class="c003"> and </span><span class="c003"><span class="c002">imag</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; z.real
+0.0707
+&gt;&gt;&gt; z.imag
+0.997
+</span></pre><p><span class="c003">To get the magnitude, you can use the built-in function </span><span class="c003"><span class="c002">abs</span></span><span class="c003">
+or </span><span class="c003"><span class="c002">np.absolute</span></span><span class="c003">:
+</span><a id="hevea_default267"></a></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; abs(z)
+1.0
+&gt;&gt;&gt; np.absolute(z)
+1.0
+</span></pre><p><span class="c003">To get the angle, you can use </span><span class="c003"><span class="c002">np.angle</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; np.angle(z)
+1.5
+</span></pre><p><span class="c003">This example confirms that </span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003"> &#966;</span></sup><span class="c003"> is a complex number with
+magnitude 1 and angle </span><span class="c003">&#966;</span><span class="c003"> radians.
+</span><a id="hevea_default268"></a><span class="c003">
+</span><a id="hevea_default269"></a></p><span class="c003">
+</span><h2 class="section" id="sec56"><span class="c003">7.2&nbsp;&nbsp;Complex signals</span></h2>
+<p><span class="c003">If </span><span class="c003">&#966;(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)</span><span class="c003"> is a function of time, </span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003"> &#966;(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)</span></sup><span class="c003"> is also a function
+of time. Specifically,
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;&#966;(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)</span></sup><span class="c003">&nbsp;=&nbsp;</span><span class="c003">cos</span><span class="c003">&#966;(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)&nbsp;+&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003">sin</span><span class="c003">&#966;(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+This function describes a quantity that varies in time, so it is
+a signal. Specifically, it is a </span><span class="c003"><span class="c007">complex exponential signal</span></span><span class="c003">.
+</span><a id="hevea_default270"></a></p><p><span class="c003">In the special case where the frequency of the signal is constant,
+</span><span class="c003">&#966;(</span><span class="c003"><span class="c006">t</span></span><span class="c003">)</span><span class="c003"> is </span><span class="c003">2 &#960; </span><span class="c003"><span class="c006">f</span></span><span class="c003"> </span><span class="c003"><span class="c006">t</span></span><span class="c003"> and the result is a </span><span class="c003"><span class="c007">complex sinusoid</span></span><span class="c003">:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">t</span></span></sup><span class="c003">&nbsp;=&nbsp;</span><span class="c003">cos</span><span class="c003">2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">t</span></span><span class="c003">&nbsp;+&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003">sin</span><span class="c003">2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">t</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Or more generally, the signal might start at a phase offset
+</span><span class="c003">&#966;</span><sub><span class="c003">0</span></sub><span class="c003">, yielding
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;(2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">t</span></span><span class="c003">&nbsp;+&nbsp;&#966;</span><sub><span class="c003">0</span></sub><span class="c003">)</span></sup><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+</span><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> provides an implementation of this signal,
+</span><span class="c003"><span class="c002">ComplexSinusoid</span></span><span class="c003">:
+</span><a id="hevea_default271"></a></p><pre class="verbatim"><span class="c003">class ComplexSinusoid(Sinusoid):
+ 
+   def evaluate(self, ts):
+        phases = PI2 * self.freq * ts + self.offset
+        ys = self.amp * np.exp(1j * phases)
+        return ys
+</span></pre><p><span class="c003"><span class="c002">ComplexSinusoid</span></span><span class="c003"> inherits </span><code><span class="c003">__init__</span></code><span class="c003"> from
+</span><span class="c003"><span class="c002">Sinusoid</span></span><span class="c003">. It provides a version of </span><span class="c003"><span class="c002">evaluate</span></span><span class="c003">
+that is almost identical to </span><span class="c003"><span class="c002">Sinusoid.evaluate</span></span><span class="c003">; the
+only difference is that it uses </span><span class="c003"><span class="c002">np.exp</span></span><span class="c003"> instead of
+</span><span class="c003"><span class="c002">np.sin</span></span><span class="c003">.</span></p><p><span class="c003">The result is a NumPy array of complex numbers:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; signal = thinkdsp.ComplexSinusoid(freq=1, amp=0.6, offset=1)
+&gt;&gt;&gt; wave = signal.make_wave(duration=1, framerate=4)
+&gt;&gt;&gt; wave.ys
+[ 0.324+0.505j -0.505+0.324j -0.324-0.505j  0.505-0.324j]
+</span></pre><p><span class="c003">The frequency of this signal is 1 cycle per second; the amplitude
+is 0.6 (in unspecified units); and the phase offset is 1 radian.
+</span><a id="hevea_default272"></a></p><p><span class="c003">This example evaluates the signal at 4 places equally spaced between
+0 and 1 second. The resulting samples are complex numbers.</span></p><span class="c003">
+</span><h2 class="section" id="sec57"><span class="c003">7.3&nbsp;&nbsp;The synthesis problem</span></h2>
+<p><span class="c003">Just as we did with real sinusoids, we we can create compound signals
+by adding up complex sinusoids with different frequencies. And that
+brings us to the complex version of the synthesis problem: given the
+frequency and amplitude of each complex component, how do we evaluate the
+signal?
+</span><a id="hevea_default273"></a></p><p><span class="c003">The simplest solution is to create </span><span class="c003"><span class="c002">ComplexSinusoid</span></span><span class="c003"> objects and
+add them up.</span></p><pre class="verbatim"><span class="c003">def synthesize1(amps, fs, ts):
+    components = [thinkdsp.ComplexSinusoid(freq, amp)
+                  for amp, freq in zip(amps, fs)]
+    signal = thinkdsp.SumSignal(*components)
+    ys = signal.evaluate(ts)
+    return ys
+</span></pre><p><span class="c003">This function is almost identical to </span><span class="c003"><span class="c002">synthesize1</span></span><span class="c003"> in
+Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#synth1"><span class="c003">6.1</span></a><span class="c003">; the only difference is that I replaced
+</span><span class="c003"><span class="c002">CosSignal</span></span><span class="c003"> with </span><span class="c003"><span class="c002">ComplexSinusoid</span></span><span class="c003">.</span></p><p><span class="c003">Here’s an example:</span></p><pre class="verbatim"><span class="c003">    amps = np.array([0.6, 0.25, 0.1, 0.05])
+    fs = [100, 200, 300, 400]
+    framerate = 11025
+    ts = np.linspace(0, 1, framerate)
+    ys = synthesize1(amps, fs, ts)
+</span></pre><p><span class="c003">The result is:</span></p><pre class="verbatim"><span class="c003">[ 1.000 +0.000e+00j  0.995 +9.093e-02j  0.979 +1.803e-01j ...,
+  0.979 -1.803e-01j  0.995 -9.093e-02j  1.000 -5.081e-15j]
+</span></pre><p><span class="c003">At the lowest level, a complex signal is a sequence of complex
+numbers. But how should we interpret it? We have some intuition for
+real signals: they represent quantities that vary in time; for
+example, a sound signal represents changes in air pressure.
+But nothing we measure in the world yields complex numbers.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Discrete Fourier Transform_files/thinkdsp037.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 7.1: Real and imaginary parts of a mixture of complex sinusoids.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.dft1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">So what is a complex signal? I don’t have a satisfying answer to this
+question. The best I can offer is two unsatisfying
+answers:
+</span><a id="hevea_default274"></a></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">A complex signal is a mathematical abstraction that is useful
+for computation and analysis, but it does not correspond directly
+with anything in the real world.</span></li><li class="li-enumerate"><span class="c003">If you like, you can think of a complex signal as a sequence of
+complex numbers that contains two signals as its real and imaginary
+parts.</span></li></ol><p><span class="c003">Taking the second point of view, we can split the previous
+signal into its real and imaginary parts:</span></p><pre class="verbatim"><span class="c003">    n = 500
+    thinkplot.plot(ts[:n], ys[:n].real, label='real')
+    thinkplot.plot(ts[:n], ys[:n].imag, label='imag')
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html#fig.dft1"><span class="c003">7.1</span></a><span class="c003"> shows a segment of the result. The
+real part is a sum of cosines; the imaginary part is
+a sum of sines. Although the waveforms look different, they
+contain the same frequency components in the same proportions.
+To our ears, they sound the same (in general, we don’t hear
+phase offsets).</span></p><span class="c003">
+</span><h2 class="section" id="sec58"><span class="c003">7.4&nbsp;&nbsp;Synthesis with matrices</span></h2>
+<p><span class="c003">
+</span><a id="synthmat"></a></p><p><span class="c003">As we saw in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#synthesis"><span class="c003">6.2</span></a><span class="c003">, we can also express the synthesis
+problem in terms of matrix multiplication: 
+</span><a id="hevea_default275"></a></p><pre class="verbatim"><span class="c003">PI2 = np.pi * 2
+
+def synthesize2(amps, fs, ts):
+    args = np.outer(ts, fs)
+    M = np.exp(1j * PI2 * args)
+    ys = np.dot(M, amps)
+    return ys
+</span></pre><p><span class="c003">Again, </span><span class="c003"><span class="c002">amps</span></span><span class="c003"> is a NumPy array that contains a sequence of
+amplitudes.</span></p><p><span class="c003"><span class="c002">fs</span></span><span class="c003"> is a sequence containing the frequencies of the
+components. </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> contains the times where we will evaluate
+the signal.</span></p><p><span class="c003"><span class="c002">args</span></span><span class="c003"> contains the outer product of </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> and </span><span class="c003"><span class="c002">fs</span></span><span class="c003">,
+with the </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> running down the rows and the </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> running
+across the columns (you might want to refer back to
+Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#fig.synthesis"><span class="c003">6.1</span></a><span class="c003">).
+</span><a id="hevea_default276"></a></p><p><span class="c003">Each column of matrix </span><span class="c003"><span class="c002">M</span></span><span class="c003"> contains a complex sinusoid with
+a particular frequency, evaluated at a sequence of </span><span class="c003"><span class="c002">ts</span></span><span class="c003">.</span></p><p><span class="c003">When we multiply </span><span class="c003"><span class="c002">M</span></span><span class="c003"> by the amplitudes, the result is a vector
+whose elements correspond to the </span><span class="c003"><span class="c002">ts</span></span><span class="c003">; each element is the sum of
+several complex sinusoids, evaluated at a particular time.</span></p><p><span class="c003">Here’s the example from the previous section again:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; ys = synthesize2(amps, fs, ts)
+&gt;&gt;&gt; ys
+[ 1.000 +0.000e+00j  0.995 +9.093e-02j  0.979 +1.803e-01j ...,
+  0.979 -1.803e-01j  0.995 -9.093e-02j  1.000 -5.081e-15j]
+</span></pre><p><span class="c003">The result is the same.</span></p><p><span class="c003">In this example the amplitudes are real, but they could also be
+complex. What effect does a complex amplitude have on the result?
+Remember that we can think of a complex number in two ways: either the
+sum of a real and imaginary part, </span><span class="c003"><span class="c006">x</span></span><span class="c003"> + </span><span class="c003"><span class="c006">i</span></span><span class="c003"> </span><span class="c003"><span class="c006">y</span></span><span class="c003">, or the product of a real
+amplitude and a complex exponential, </span><span class="c003"><span class="c006">A</span></span><span class="c003"> </span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003"> &#966;</span><sub><span class="c003">0</span></sub></sup><span class="c003">. Using the
+second interpretation, we can see what happens when we multiply
+a complex amplitude by a complex sinusoid. For each frequency, </span><span class="c003"><span class="c006">f</span></span><span class="c003">,
+we have:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">A</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;&#966;</span><sub><span class="c003">0</span></sub></sup><span class="c003">&nbsp;·&nbsp;</span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">t</span></span></sup><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">A</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">t</span></span><span class="c003">&nbsp;+&nbsp;&#966;</span><sub><span class="c003">0</span></sub></sup><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Multiplying by </span><span class="c003"><span class="c006">A</span></span><span class="c003"> </span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">i</span></span><span class="c003"> &#966;</span><sub><span class="c003">0</span></sub></sup><span class="c003"> multiplies the amplitude by </span><span class="c003"><span class="c006">A</span></span><span class="c003">
+and adds the phase offset </span><span class="c003">&#966;</span><sub><span class="c003">0</span></sub><span class="c003">.
+</span><a id="hevea_default277"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Discrete Fourier Transform_files/thinkdsp038.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 7.2: Real part of two complex signals that differ by a phase
+offset.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.dft2"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">We can test that claim by running the previous example with
+complex amplitudes:</span></p><pre class="verbatim"><span class="c003">    phi = 1.5
+    amps2 = amps * np.exp(1j * phi)
+    ys2 = synthesize2(amps2, fs, ts)
+
+    thinkplot.plot(ts[:n], ys.real[:n])
+    thinkplot.plot(ts[:n], ys2.real[:n])
+</span></pre><p><span class="c003">Since </span><span class="c003"><span class="c002">amps</span></span><span class="c003">
+is an array of reals, multiplying by </span><span class="c003"><span class="c002">np.exp(1j * phi)</span></span><span class="c003"> yields
+an array of complex numbers with phase offset </span><span class="c003"><span class="c002">phi</span></span><span class="c003"> radians, and
+the same magnitudes as </span><span class="c003"><span class="c002">amps</span></span><span class="c003">.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html#fig.dft2"><span class="c003">7.2</span></a><span class="c003"> shows waveforms with different
+phase offsets. With </span><span class="c003">&#966;</span><sub><span class="c003">0</span></sub><span class="c003"> = 1.5</span><span class="c003"> each frequency component gets
+shifted by about a quarter of a cycle. But components with different
+frequencies have different cycles; as a result, each component is
+shifted by a different amount in time. When we add up the components,
+the resulting waveforms look different.</span></p><p><span class="c003">Now that we have the more general solution to the synthesis problem –
+one that handles complex amplitudes – we are ready for the analysis
+problem.</span></p><span class="c003">
+</span><h2 class="section" id="sec59"><span class="c003">7.5&nbsp;&nbsp;The analysis problem</span></h2>
+<p><span class="c003">The analysis problem is the inverse of the synthesis problem: given a
+sequence of samples, </span><span class="c003"><span class="c006">y</span></span><span class="c003">, and knowing the frequencies
+that make up the signal, can we compute the complex amplitudes of the
+components, </span><span class="c003"><span class="c006">a</span></span><span class="c003">?
+</span><a id="hevea_default278"></a></p><p><span class="c003">As we saw in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#analysis"><span class="c003">6.3</span></a><span class="c003">, we can solve this problem by forming
+the synthesis matrix, </span><span class="c003"><span class="c006">M</span></span><span class="c003">, and solving the system of linear
+equations, </span><span class="c003"><span class="c006">M</span></span><span class="c003"> </span><span class="c003"><span class="c006">a</span></span><span class="c003"> = </span><span class="c003"><span class="c006">y</span></span><span class="c003"> for </span><span class="c003"><span class="c006">a</span></span><span class="c003">.</span></p><pre class="verbatim"><span class="c003">def analyze1(ys, fs, ts):
+    args = np.outer(ts, fs)
+    M = np.exp(1j * PI2 * args)
+    amps = np.linalg.solve(M, ys)
+    return amps
+</span></pre><p><span class="c003"><span class="c002">analyze1</span></span><span class="c003"> takes a (possibly complex) wave array, </span><span class="c003"><span class="c002">ys</span></span><span class="c003">, a
+sequence of real frequencies, </span><span class="c003"><span class="c002">fs</span></span><span class="c003">, and a sequence of real
+times, </span><span class="c003"><span class="c002">ts</span></span><span class="c003">. It returns a sequence of complex amplitudes, </span><span class="c003"><span class="c002">amps</span></span><span class="c003">.</span></p><p><span class="c003">Continuing the previous example, we can confirm that </span><span class="c003"><span class="c002">analyze1</span></span><span class="c003">
+recovers the amplitudes we started with. For the linear system
+solver to work, </span><span class="c003"><span class="c002">M</span></span><span class="c003"> has to be square, so we need </span><span class="c003"><span class="c002">ys</span></span><span class="c003">, </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> to have the same length. I’ll ensure that by
+slicing </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> down to the length of </span><span class="c003"><span class="c002">fs</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; n = len(fs)
+&gt;&gt;&gt; amps2 = analyze1(ys[:n], fs, ts[:n])
+&gt;&gt;&gt; amps2
+[ 0.60+0.j  0.25-0.j  0.10+0.j  0.05-0.j]
+</span></pre><p><span class="c003">These are approximately the amplitudes we started with, although
+each component has a small imaginary part due to
+floating-point errors.</span></p><span class="c003">
+</span><h2 class="section" id="sec60"><span class="c003">7.6&nbsp;&nbsp;Efficient analysis</span></h2>
+<p><span class="c003">Unfortunately, solving a linear system of equations is slow. For the
+DCT, we were able to speed things up by choosing </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> so that </span><span class="c003"><span class="c002">M</span></span><span class="c003"> is orthogonal. That way, the inverse of </span><span class="c003"><span class="c002">M</span></span><span class="c003">
+is the transpose of </span><span class="c003"><span class="c002">M</span></span><span class="c003">, and we can compute both DCT and inverse
+DCT by matrix multiplication.
+</span><a id="hevea_default279"></a></p><p><span class="c003">We’ll do the same thing for the DFT, with one small change.
+Since </span><span class="c003"><span class="c002">M</span></span><span class="c003"> is complex, we need it to be </span><span class="c003"><span class="c007">unitary</span></span><span class="c003">, rather
+than orthogonal, which means that the inverse of </span><span class="c003"><span class="c002">M</span></span><span class="c003"> is
+the conjugate transpose of </span><span class="c003"><span class="c002">M</span></span><span class="c003">, which we can compute by
+transposing the matrix and negating the imaginary part of each
+element. See </span><a href="http://en.wikipedia.org/wiki/Unitary_matrix"><span class="c003"><span class="c002">http://en.wikipedia.org/wiki/Unitary_matrix</span></span></a><span class="c003">. 
+</span><a id="hevea_default280"></a></p><p><span class="c003">The NumPy methods </span><span class="c003"><span class="c002">conj</span></span><span class="c003"> and </span><span class="c003"><span class="c002">transpose</span></span><span class="c003"> do what we
+want. Here’s the code that computes </span><span class="c003"><span class="c002">M</span></span><span class="c003"> for </span><span class="c003"><span class="c006">N</span></span><span class="c003">=4</span><span class="c003"> components:
+</span><a id="hevea_default281"></a><span class="c003">
+</span><a id="hevea_default282"></a></p><pre class="verbatim"><span class="c003">    N = 4
+    ts = np.arange(N) / N
+    fs = np.arange(N)
+    args = np.outer(ts, fs)
+    M = np.exp(1j * PI2 * args)
+</span></pre><p><span class="c003">If </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is unitary, </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">*</span></sup><span class="c003"><span class="c006">M</span></span><span class="c003"> = </span><span class="c003"><span class="c006">I</span></span><span class="c003">, where </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">*</span></sup><span class="c003"> is the conjugate transpose
+of </span><span class="c003"><span class="c006">M</span></span><span class="c003">, and </span><span class="c003"><span class="c006">I</span></span><span class="c003"> is the identity matrix. We can test whether </span><span class="c003"><span class="c006">M</span></span><span class="c003">
+is unitary like this:
+</span><a id="hevea_default283"></a></p><pre class="verbatim"><span class="c003">    MstarM = M.conj().transpose().dot(M)
+</span></pre><p><span class="c003">The result, within the tolerance of floating-point error, is
+</span><span class="c003">4 </span><span class="c003"><span class="c006">I</span></span><span class="c003">, so </span><span class="c003"><span class="c006">M</span></span><span class="c003"> is unitary except for an extra factor of </span><span class="c003"><span class="c006">N</span></span><span class="c003">,
+similar to the extra factor of 2 we found with the DCT.</span></p><p><span class="c003">We can use this result to write a faster version of </span><span class="c003"><span class="c002">analyze1</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">def analyze2(ys, fs, ts):
+    args = np.outer(ts, fs)
+    M = np.exp(1j * PI2 * args)
+    amps = M.conj().transpose().dot(ys) / N
+    return amps
+</span></pre><p><span class="c003">And test it with appropriate values of </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ts</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">    N = 4
+    amps = np.array([0.6, 0.25, 0.1, 0.05])
+    fs = np.arange(N)
+    ts = np.arange(N) / N
+    ys = synthesize2(amps, fs, ts)
+    amps3 = analyze2(ys, fs, ts)
+</span></pre><p><span class="c003">Again, the result is correct within the tolerance of floating-point
+arithmetic.</span></p><pre class="verbatim"><span class="c003">[ 0.60+0.j  0.25+0.j  0.10-0.j  0.05-0.j]
+</span></pre><span class="c003">
+</span><h2 class="section" id="sec61"><span class="c003">7.7&nbsp;&nbsp;DFT</span></h2>
+<p><span class="c003">
+</span><a id="dftsection"></a></p><p><span class="c003">As a function, </span><span class="c003"><span class="c002">analyze2</span></span><span class="c003"> would be hard to use because it
+only works if </span><span class="c003"><span class="c002">fs</span></span><span class="c003"> and </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> are chosen correctly.
+Instead, I will rewrite it to take just </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> and compute </span><span class="c003"><span class="c002">freq</span></span><span class="c003">
+and </span><span class="c003"><span class="c002">ts</span></span><span class="c003"> itself.
+</span><a id="hevea_default284"></a></p><p><span class="c003">First, I’ll make a function to compute the synthesis matrix, </span><span class="c003"><span class="c006">M</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">def synthesis_matrix(N):
+    ts = np.arange(N) / N
+    fs = np.arange(N)
+    args = np.outer(ts, fs)
+    M = np.exp(1j * PI2 * args)
+    return M
+</span></pre><p><span class="c003">Then I’ll write the function that takes </span><span class="c003"><span class="c002">ys</span></span><span class="c003"> and returns 
+</span><span class="c003"><span class="c002">amps</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">def analyze3(ys):
+    N = len(ys)
+    M = synthesis_matrix(N)
+    amps = M.conj().transpose().dot(ys) / N
+    return amps
+</span></pre><p><span class="c003">We are almost done; </span><span class="c003"><span class="c002">analyze3</span></span><span class="c003"> computes something very
+close to the DFT, with one difference. The conventional definition
+of DFT does not divide by </span><span class="c003"><span class="c002">N</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">def dft(ys):
+    N = len(ys)
+    M = synthesis_matrix(N)
+    amps = M.conj().transpose().dot(ys)
+    return amps
+</span></pre><p><span class="c003">Now we can confirm that my version yields the same result as
+</span><span class="c003"><span class="c002">np.fft.fft</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; dft(ys)
+[ 2.4+0.j  1.0+0.j  0.4-0.j  0.2-0.j]
+</span></pre><p><span class="c003">The result is close to </span><span class="c003"><span class="c002">amps * N</span></span><span class="c003">.
+And here’s the version in </span><span class="c003"><span class="c002">np.fft</span></span><span class="c003">:</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; np.fft.fft(ys)
+[ 2.4+0.j  1.0+0.j  0.4-0.j  0.2-0.j]
+</span></pre><p><span class="c003">They are the same, within floating point error.</span></p><p><span class="c003">The inverse DFT is almost the same, except we don’t have to transpose
+and conjugate </span><span class="c003"><span class="c002">M</span></span><span class="c003">, and </span><span class="c003"><em>now</em></span><span class="c003"> we have to divide through by </span><span class="c003"><span class="c002">N</span></span><span class="c003">:
+</span><a id="hevea_default285"></a></p><pre class="verbatim"><span class="c003">def idft(ys):
+    N = len(ys)
+    M = synthesis_matrix(N)
+    amps = M.dot(ys) / N
+    return amps
+</span></pre><p><span class="c003">Finally, we can confirm that </span><span class="c003"><span class="c002">dft(idft(amps))</span></span><span class="c003"> yields </span><span class="c003"><span class="c002">amps</span></span><span class="c003">.</span></p><pre class="verbatim"><span class="c003">&gt;&gt;&gt; ys = idft(amps)
+&gt;&gt;&gt; dft(ys)
+[ 0.60+0.j  0.25+0.j  0.10-0.j  0.05-0.j]
+</span></pre><p><span class="c003">If I could go back in time, I might change the definition of
+DFT so it divides by </span><span class="c003"><span class="c006">N</span></span><span class="c003"> and the inverse DFT doesn’t. That would
+be more consistent with my presentation of the synthesis and analysis
+problems.</span></p><p><span class="c003">Or I might change the definition so that both operations divide
+through by </span><span class="c003">&#8730;</span><span class="c003"><span class="c012"><span class="c006">N</span></span></span><span class="c003">. Then the DFT and inverse DFT would be
+more symmetric.</span></p><p><span class="c003">But I can’t go back in time (yet!), so we’re stuck with a slightly
+weird convention. For practical purposes it doesn’t really
+matter.</span></p><span class="c003">
+</span><h2 class="section" id="sec62"><span class="c003">7.8&nbsp;&nbsp;The DFT is periodic</span></h2>
+<p><span class="c003">In this chapter I presented the DFT in the form of matrix multiplication.
+We compute the synthesis matrix, </span><span class="c003"><span class="c006">M</span></span><span class="c003">, and the analysis matrix, </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">*</span></sup><span class="c003">.
+When we multiply </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">*</span></sup><span class="c003"> by the wave array, </span><span class="c003"><span class="c006">y</span></span><span class="c003">, each element of the
+result is the product of a row from </span><span class="c003"><span class="c006">M</span></span><sup><span class="c003">*</span></sup><span class="c003"> and </span><span class="c003"><span class="c006">y</span></span><span class="c003">, which we can
+write in the form of a summation:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">n</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">y</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">k</span></span><span class="c003"> is an index of frequency from
+</span><span class="c003">0</span><span class="c003"> to </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003"> and </span><span class="c003"><span class="c006">n</span></span><span class="c003"> is an index of time from </span><span class="c003">0</span><span class="c003"> to </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003">.
+So </span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003"> is the </span><span class="c003"><span class="c006">k</span></span><span class="c003">th element of the DFT of </span><span class="c003"><span class="c006">y</span></span><span class="c003">.
+</span><a id="hevea_default286"></a></p><p><span class="c003">Normally we evaluate this summation for </span><span class="c003"><span class="c006">N</span></span><span class="c003"> values of </span><span class="c003"><span class="c006">k</span></span><span class="c003">, running from
+0 to </span><span class="c003"><span class="c006">N</span></span><span class="c003">&#8722;1</span><span class="c003">. We </span><span class="c003"><em>could</em></span><span class="c003"> evaluate it for other values of </span><span class="c003"><span class="c006">k</span></span><span class="c003">, but
+there is no point, because they start to repeat. That is, the value at
+</span><span class="c003"><span class="c006">k</span></span><span class="c003"> is the same as the value at </span><span class="c003"><span class="c006">k</span></span><span class="c003">+</span><span class="c003"><span class="c006">N</span></span><span class="c003"> or </span><span class="c003"><span class="c006">k</span></span><span class="c003">+2</span><span class="c003"><span class="c006">N</span></span><span class="c003"> or </span><span class="c003"><span class="c006">k</span></span><span class="c003">&#8722;</span><span class="c003"><span class="c006">N</span></span><span class="c003">, etc.</span></p><p><span class="c003">We can see that mathematically by plugging </span><span class="c003"><span class="c006">k</span></span><span class="c003">+</span><span class="c003"><span class="c006">N</span></span><span class="c003"> into the summation:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">k</span></span><span class="c003">+</span><span class="c003"><span class="c006">N</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">n</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">y</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;(</span><span class="c003"><span class="c006">k</span></span><span class="c003">+</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+Since there is a sum in the exponent, we can break it into two parts:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">k</span></span><span class="c003">+</span><span class="c003"><span class="c006">N</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">n</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">y</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+In the second term, the exponent is always an integer multiple of
+</span><span class="c003">2 &#960;</span><span class="c003">, so the result is always 1, and we can drop it:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">k</span></span><span class="c003">+</span><span class="c003"><span class="c006">N</span></span><span class="c003">]&nbsp;=&nbsp;</span></td><td class="dcell"><table class="display"><tbody><tr><td class="dcell c008"><span class="c003">&nbsp;</span></td></tr>
+<tr><td class="dcell c008"><span class="c005">&#8721;</span></td></tr>
+<tr><td class="dcell c008"><span class="c003"><span class="c003"><span class="c006">n</span></span></span></td></tr>
+</tbody></table></td><td class="dcell"><span class="c003">&nbsp;</span><span class="c003"><span class="c006">y</span></span><span class="c003">[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span><span class="c003">exp</span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+And we can see that this summation is equivalent to </span><span class="c003"> </span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">k</span></span><span class="c003">]</span><span class="c003">.
+So the DFT is periodic, with period </span><span class="c003"><span class="c006">N</span></span><span class="c003">. You will need this result
+for one of the exercises below, which asks you to implement the Fast Fourier
+Transform (FFT).</span></p><p><span class="c003">As an aside, writing the DFT in the form of a summation provides an
+insight into how it works. If you review the diagram in
+Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html#synthesis"><span class="c003">6.2</span></a><span class="c003">, you’ll see that each column of the synthesis matrix
+is a signal evaluated at a sequence of times. The analysis matrix is
+the (conjugate) transpose of the synthesis matrix, so each </span><span class="c003"><em>row</em></span><span class="c003">
+is a signal evaluated at a sequence of times.</span></p><p><span class="c003">Therefore, each summation is the correlation of </span><span class="c003"><span class="c006">y</span></span><span class="c003"> with one of the
+signals in the array (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html#dotproduct"><span class="c003">5.5</span></a><span class="c003">). That is, each
+element of the DFT is a correlation that quantifies the similarity of
+the wave array, </span><span class="c003"><span class="c006">y</span></span><span class="c003">, and a complex exponential at a particular
+frequency.
+</span><a id="hevea_default287"></a></p><span class="c003">
+</span><h2 class="section" id="sec63"><span class="c003">7.9&nbsp;&nbsp;DFT of real signals</span></h2>
+<p><span class="c003">
+</span><a id="dftreal"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Discrete Fourier Transform_files/thinkdsp039.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 7.3: DFT of a 500 Hz sawtooth signal sampled at 10 kHz.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.dft3"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">The Spectrum class in </span><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> is based on </span><span class="c003"><span class="c002">np.ftt.rfft</span></span><span class="c003">,
+which computes the “real DFT”; that is, it works with real signals.
+But the DFT as presented in this chapter is more general than that; it
+works with complex signals.
+</span><a id="hevea_default288"></a></p><p><span class="c003">So what happens when we apply the “full DFT” to a real signal?
+Let’s look at an example:
+</span><a id="hevea_default289"></a></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.SawtoothSignal(freq=500)
+    wave = signal.make_wave(duration=0.1, framerate=10000)
+    hs = dft(wave.ys)
+    amps = np.absolute(hs)
+</span></pre><p><span class="c003">This code makes a sawtooth wave with frequency 500 Hz, sampled at
+frame rate 10 kHz. </span><span class="c003"><span class="c002">hs</span></span><span class="c003"> contains the complex DFT of the wave;
+</span><span class="c003"><span class="c002">amps</span></span><span class="c003"> contains the amplitude at each frequency. But what
+frequency do these amplitudes correspond to? If we look at the
+body of </span><span class="c003"><span class="c002">dft</span></span><span class="c003">, we see:</span></p><pre class="verbatim"><span class="c003">    fs = np.arange(N)
+</span></pre><p><span class="c003">It’s tempting to think that these values are the right frequencies.
+The problem is that </span><span class="c003"><span class="c002">dft</span></span><span class="c003"> doesn’t know the sampling rate. The DFT
+assumes that the duration of the wave is 1 time unit, so it thinks the
+sampling rate is </span><span class="c003"><span class="c006">N</span></span><span class="c003"> per time unit. In order to interpret the
+frequencies, we have to convert from these arbitrary time units back
+to seconds, like this:</span></p><pre class="verbatim"><span class="c003">    fs = np.arange(N) * framerate / N
+</span></pre><p><span class="c003">With this change, the range of frequencies is from 0 to the actual
+frame rate, 10 kHz. Now we can plot the spectrum:</span></p><pre class="verbatim"><span class="c003">    thinkplot.plot(fs, amps)
+    thinkplot.config(xlabel='frequency (Hz)', 
+                     ylabel='amplitude')
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html#fig.dft3"><span class="c003">7.3</span></a><span class="c003"> shows the amplitude of the signal for each
+frequency component from 0 to 10 kHz. The left half of the figure
+is what we should expect: the dominant frequency is at 500 Hz, with
+harmonics dropping off like </span><span class="c003">1/</span><span class="c003"><span class="c006">f</span></span><span class="c003">.
+</span><a id="hevea_default290"></a></p><p><span class="c003">But the right half of the figure is a surprise. Past 5000 Hz, the
+amplitude of the harmonics starts growing again, peaking at 9500 Hz.
+What’s going on?</span></p><p><span class="c003">The answer: aliasing. Remember that with frame rate 10000 Hz, the
+folding frequency is 5000 Hz. As we saw in Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp003.html#aliasing"><span class="c003">2.3</span></a><span class="c003">,
+a component at 5500 Hz is indistinguishable from a component
+at 4500 Hz. When we evaluate the DFT at 5500 Hz, we get the same
+value as at 4500 Hz. Similarly, the value at 6000 Hz is the same
+as the one at 4000 Hz, and so on.
+</span><a id="hevea_default291"></a></p><p><span class="c003">The DFT of a real signal is symmetric around the folding frequency.
+Since there is no additional information past this point, we can
+save time by evaluating only the first half of the DFT,
+and that’s exactly what </span><span class="c003"><span class="c002">np.fft.rfft</span></span><span class="c003"> does.
+</span><a id="hevea_default292"></a></p><span class="c003">
+</span><h2 class="section" id="sec64"><span class="c003">7.10&nbsp;&nbsp;Exercises</span></h2>
+<p><span class="c003">Solutions to these exercises are in </span><span class="c003"><span class="c002">chap07soln.ipynb</span></span><span class="c003">.</span></p><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;1</span></span><span class="c003">&nbsp;&nbsp;<em>
+The notebook for this chapter, </em></span><span class="c003"><em><span class="c002">chap07.ipynb</span></em></span><span class="c003"><em>, contains
+additional examples and explanations. Read through it and run
+the code.
+</em></span></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;2</span></span><span class="c003">&nbsp;&nbsp;<em>
+In this chapter, I showed how we can express the DFT and inverse DFT
+as matrix multiplications. These operations take time proportional to
+</em></span><span class="c003"><span class="c006">N</span></span><sup><span class="c003">2</span></sup><span class="c003"><em>, where </em></span><span class="c003"><span class="c006">N</span></span><span class="c003"><em> is the length of the wave array. That is fast enough
+for many applications, but there is a faster
+algorithm, the Fast Fourier Transform (FFT), which takes time
+proportional to </em></span><span class="c003"><span class="c006">N</span></span><span class="c003"> </span><span class="c003">log</span><span class="c003"><span class="c006">N</span></span><span class="c003"><em>.</em></span><p><span class="c003"><em>The key to the FFT is the Danielson-Lanczos lemma:
+</em></span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;=&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">e</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;+&nbsp;</span><span class="c003"><span class="c006">exp</span></span><span class="c003">(&#8722;2&nbsp;&#960;&nbsp;</span><span class="c003"><span class="c006">i</span></span><span class="c003">&nbsp;</span><span class="c003"><span class="c006">n</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">N</span></span><span class="c003">)&nbsp;</span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">o</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003"><em>
+Where </em></span><span class="c003"> </span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)[</span><span class="c003"><span class="c006">n</span></span><span class="c003">]</span><span class="c003"><em> is the </em></span><span class="c003"><span class="c006">n</span></span><span class="c003"><em>th element of the DFT of </em></span><span class="c003"><span class="c006">y</span></span><span class="c003"><em>; </em></span><span class="c003"><span class="c006">e</span></span><span class="c003"><em> is a
+wave array containing the even elements of </em></span><span class="c003"><span class="c006">y</span></span><span class="c003"><em>, and </em></span><span class="c003"><span class="c006">o</span></span><span class="c003"><em> contains the
+odd elements of </em></span><span class="c003"><span class="c006">y</span></span><span class="c003"><em>.</em></span></p><p><span class="c003"><em>This lemma suggests a recursive algorithm for the DFT:</em></span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003"><em>Given a wave array, </em></span><span class="c003"><span class="c006">y</span></span><span class="c003"><em>, split it into its even elements, </em></span><span class="c003"><span class="c006">e</span></span><span class="c003"><em>,
+and its odd elements, </em></span><span class="c003"><span class="c006">o</span></span><span class="c003"><em>.</em></span></li><li class="li-enumerate"><span class="c003"><em>Compute the DFT of </em></span><span class="c003"><span class="c006">e</span></span><span class="c003"><em> and </em></span><span class="c003"><span class="c006">o</span></span><span class="c003"><em> by making recursive calls.</em></span></li><li class="li-enumerate"><span class="c003"><em>Compute </em></span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">)</span><span class="c003"><em> for each value of </em></span><span class="c003"><span class="c006">n</span></span><span class="c003"><em> using the
+Danielson-Lanczos lemma.</em></span></li></ol><p><span class="c003"><em>For the base case of this recursion, you could wait until the length
+of </em></span><span class="c003"><span class="c006">y</span></span><span class="c003"><em> is 1. In that case, </em></span><span class="c003"><span class="c006">DFT</span></span><span class="c003">(</span><span class="c003"><span class="c006">y</span></span><span class="c003">) = </span><span class="c003"><span class="c006">y</span></span><span class="c003"><em>. Or if the length of </em></span><span class="c003"><span class="c006">y</span></span><span class="c003"><em>
+is sufficiently small, you could compute its DFT by matrix multiplication,
+possibly using a precomputed matrix.</em></span></p><p><span class="c003"><em>Hint: I suggest you implement this algorithm incrementally by starting
+with a version that is not truly recursive. In Step 2, instead of
+making a recursive call, use </em></span><span class="c003"><em><span class="c002">dft</span></em></span><span class="c003"><em>, as defined in
+Section&nbsp;</em></span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp008.html#dftsection"><span class="c003"><em>7.7</em></span></a><span class="c003"><em>, or </em></span><span class="c003"><em><span class="c002">np.fft.fft</span></em></span><span class="c003"><em>. Get Step 3 working,
+and confirm that the results are consistent with the other
+implementations. Then add a base case and confirm that it works.
+Finally, replace Step 2 with recursive calls.</em></span></p><p><span class="c003"><em>One more hint: Remember that the DFT is periodic; you might find </em></span><span class="c003"><em><span class="c002">np.tile</span></em></span><span class="c003"><em> useful.</em></span></p><p><span class="c003"><em>You can read more about the FFT at
+</em></span><a href="https://en.wikipedia.org/wiki/Fast_Fourier_transform"><span class="c003"><em><span class="c002">https://en.wikipedia.org/wiki/Fast_Fourier_transform</span></em></span></a><span class="c003"><em>.
+</em></span><a id="hevea_default293"></a><span class="c003"><em>
+</em></span><a id="hevea_default294"></a><span class="c003"><em>
+</em></span><a id="hevea_default295"></a></p></div><span class="c003">
+</span></td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./Discrete Fourier Transform_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./Discrete Fourier Transform_files/q"></a><img class="c001" src="./Discrete Fourier Transform_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./Discrete Fourier Transform_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./Discrete Fourier Transform_files/q(1)"></a><img class="c001" src="./Discrete Fourier Transform_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./Discrete Fourier Transform_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Discrete Fourier Transform_files/q(2)"></a><img class="c001" src="./Discrete Fourier Transform_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./Discrete Fourier Transform_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./Discrete Fourier Transform_files/q(3)"></a><img class="c001" src="./Discrete Fourier Transform_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./Discrete Fourier Transform_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./Discrete Fourier Transform_files/q(4)"></a><img class="c001" src="./Discrete Fourier Transform_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./Discrete Fourier Transform_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Discrete Fourier Transform_files/q(5)"></a><img class="c001" src="./Discrete Fourier Transform_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp007.html"><img src="./Discrete Fourier Transform_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Discrete Fourier Transform_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp009.html"><img src="./Discrete Fourier Transform_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Discrete Fourier Transform_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>

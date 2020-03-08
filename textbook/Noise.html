@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://greenteapress.com/thinkdsp/html/thinkdsp005.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<meta name="generator" content="hevea 2.09">
+<link rel="stylesheet" type="text/css" href="./Noise_files/thinkdsp.css">
+<title>Noise</title>
+<style id="dark-reader-style" type="text/css">@media screen {
+
+/* Leading rule */
+html {
+  -webkit-filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+  filter: invert(100%) hue-rotate(180deg) brightness(110%) contrast(90%) grayscale(20%) sepia(10%) !important;
+}
+
+/* Reverse rule */
+img,
+video,
+:not(object):not(body)>embed,
+object,
+svg image,
+[style*="background:url"],
+[style*="background-image:url"],
+[style*="background: url"],
+[style*="background-image: url"],
+[background],
+twitterwidget {
+  -webkit-filter: invert(100%) hue-rotate(180deg) !important;
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+[style*="background:url"] *,
+[style*="background-image:url"] *,
+[style*="background: url"] *,
+[style*="background-image: url"] *,
+input,
+[background] *,
+img[src^="https://s0.wp.com/latex.php"],
+twitterwidget .NaturalImage-image {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.compatibility-with-darkreader-below-4-3-3 {
+  background: white !important;
+}
+
+/* Text contrast */
+html {
+  text-shadow: 0 0 0 !important;
+}
+
+/* Full screen */
+:-webkit-full-screen, :-webkit-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:-moz-full-screen, :-moz-full-screen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+:fullscreen, :fullscreen * {
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* Page background */
+html {
+  background: rgb(13,13,12) !important;
+}
+
+/* Custom rules */
+.compatibility-with-darkreader-below-4-3-3 {
+    background: white !important;
+}
+
+}</style></head>
+<body class="">
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html"><img src="./Noise_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Noise_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html"><img src="./Noise_files/next.png" alt="Next"></a>
+<hr>
+<table>
+
+<tbody><tr>
+
+<td valign="top" width="100" bgcolor="#b53f97">
+</td>
+
+<td valign="top" width="600" style="padding: 20px 20px;">
+
+<p>This HTML version of is provided for convenience, but it
+is not the best format for the book.  In particular, some of the
+symbols are not rendered correctly.
+
+</p><p>You might prefer to read
+the <a href="http://greenteapress.com/thinkdsp/thinkdsp.pdf">PDF version</a>.
+
+</p><p>
+<a href="http://amzn.to/1T8U0mR">You can buy this book at Amazon.</a>
+</p><h1 class="chapter" id="sec30"><span class="c003">Chapter&nbsp;4&nbsp;&nbsp;Noise</span></h1>
+<p><span class="c003">In English, “noise” means an unwanted or unpleasant sound. In the
+context of signal processing, it has two different senses:</span></p><ol class="enumerate" type="1"><li class="li-enumerate"><span class="c003">As in English, it can mean an unwanted signal of any kind. If
+two signals interfere with each other, each signal would consider
+the other to be noise.
+</span><a id="hevea_default153"></a></li><li class="li-enumerate"><span class="c003">“Noise” also refers to a signal that contains components at
+many frequencies, so it lacks the harmonic structure of the periodic
+signals we saw in previous chapters. </span></li></ol><p><span class="c003">This chapter is about the second kind.</span></p><p><span class="c003">The code for this chapter is in </span><span class="c003"><span class="c002">chap04.ipynb</span></span><span class="c003">, which is in the
+repository for this book (see Section&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp001.html#code"><span class="c003">0.2</span></a><span class="c003">).
+You can also view it at </span><a href="http://tinyurl.com/thinkdsp04"><span class="c003"><span class="c002">http://tinyurl.com/thinkdsp04</span></span></a><span class="c003">.</span></p><span class="c003">
+</span><h2 class="section" id="sec31"><span class="c003">4.1&nbsp;&nbsp;Uncorrelated noise</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp018.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.1: Waveform of uncorrelated uniform noise.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.whitenoise0"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">The simplest way to understand noise is to generate it, and the
+simplest kind to generate is uncorrelated uniform noise (UU noise).
+“Uniform” means the signal contains random values from a uniform
+distribution; that is, every value in the range is equally likely.
+“Uncorrelated” means that the values are independent; that is,
+knowing one value provides no information about the others.
+</span><a id="hevea_default154"></a><span class="c003">
+</span><a id="hevea_default155"></a><span class="c003">
+</span><a id="hevea_default156"></a></p><p><span class="c003">Here’s a class that represents UU noise:</span></p><pre class="verbatim"><span class="c003">class UncorrelatedUniformNoise(_Noise):
+
+    def evaluate(self, ts):
+        ys = np.random.uniform(-self.amp, self.amp, len(ts))
+        return ys
+</span></pre><p><span class="c003"><span class="c002">UncorrelatedUniformNoise</span></span><span class="c003"> inherits from </span><code><span class="c003">_Noise</span></code><span class="c003">, which
+inherits from </span><span class="c003"><span class="c002">Signal</span></span><span class="c003">.</span></p><p><span class="c003">As usual, the evaluate function takes </span><span class="c003"><span class="c002">ts</span></span><span class="c003">, the times when the
+signal should be evaluated. It uses
+</span><span class="c003"><span class="c002">np.random.uniform</span></span><span class="c003">, which generates values from a
+uniform distribution. In this example, the values are in
+the range between </span><span class="c003"><span class="c002">-amp</span></span><span class="c003"> to </span><span class="c003"><span class="c002">amp</span></span><span class="c003">.</span></p><p><span class="c003">The following example generates UU noise with duration 0.5
+seconds at 11,025 samples per second.</span></p><pre class="verbatim"><span class="c003">signal = thinkdsp.UncorrelatedUniformNoise()
+wave = signal.make_wave(duration=0.5, framerate=11025)
+</span></pre><p><span class="c003">If you play this wave, it sounds like the static you hear if you tune
+a radio between channels. Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.whitenoise0"><span class="c003">4.1</span></a><span class="c003"> shows what the
+waveform looks like. As expected, it looks pretty random.
+</span><a id="hevea_default157"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp019.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.2: Power spectrum of uncorrelated uniform noise.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.whitenoise1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">Now let’s take a look at the spectrum:</span></p><pre class="verbatim"><span class="c003">spectrum = wave.make_spectrum()
+spectrum.plot_power()
+</span></pre><p><code><span class="c003">Spectrum.plot_power</span></code><span class="c003"> is similar to </span><code><span class="c003">Spectrum.plot</span></code><span class="c003">,
+except that it plots power instead of amplitude.
+Power is the square of amplitude.
+I am switching from amplitude to power in this chapter because
+it is more conventional in the context of noise.
+</span><a id="hevea_default158"></a><span class="c003">
+</span><a id="hevea_default159"></a></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.whitenoise1"><span class="c003">4.2</span></a><span class="c003"> shows the result. Like the signal, the
+spectrum looks pretty random. In fact, it </span><span class="c003"><em>is</em></span><span class="c003"> random, but we have to
+be more precise about the word “random”. There are at least three
+things we might like to know about a noise signal or its spectrum:
+</span><a id="hevea_default160"></a></p><ul class="itemize"><li class="li-itemize"><span class="c003">Distribution: The distribution of a random signal is the set of
+possible values and their probabilities. For example, in the
+uniform noise signal, the set of values is the range from -1 to 1,
+and all values have the same probability. An alternative is
+</span><span class="c003"><span class="c007">Gaussian noise</span></span><span class="c003">, where the set of values is the range from negative
+to positive infinity, but values near 0 are the most likely, with
+probability that drops off according to the Gaussian or
+“bell” curve.
+</span><a id="hevea_default161"></a></li><li class="li-itemize"><span class="c003">Correlation: Is each value in the signal independent of the
+others, or are there dependencies between them? In UU noise, the
+values are independent.
+An alternative is </span><span class="c003"><span class="c007">Brownian noise</span></span><span class="c003">, where each value is the sum
+of the previous value and a random “step”. So if the value of the
+signal is high at a particular point in time, we expect it to stay
+high, and if it is low, we expect
+it to stay low.
+</span><a id="hevea_default162"></a></li><li class="li-itemize"><span class="c003">Relationship between power and frequency: In the spectrum of UU
+noise, the power at all frequencies is drawn from the same
+distribution; that is, the average power is the same for all
+frequencies. An alternative is </span><span class="c003"><span class="c007">pink noise</span></span><span class="c003">, where power is
+inversely related to frequency; that is, the power at frequency </span><span class="c003"><span class="c006">f</span></span><span class="c003">
+is drawn from a distribution whose mean is proportional to </span><span class="c003">1/</span><span class="c003"><span class="c006">f</span></span><span class="c003">.
+</span><a id="hevea_default163"></a></li></ul><span class="c003">
+</span><h2 class="section" id="sec32"><span class="c003">4.2&nbsp;&nbsp;Integrated spectrum</span></h2>
+<p><span class="c003">For UU noise we can see the relationship between power and frequency
+more clearly by looking at the </span><span class="c003"><span class="c007">integrated spectrum</span></span><span class="c003">, which
+is a function of frequency, </span><span class="c003"><span class="c006">f</span></span><span class="c003">, that shows the cumulative power in
+the spectrum up to </span><span class="c003"><span class="c006">f</span></span><span class="c003">.
+</span><a id="hevea_default164"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp020.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.3: Integrated spectrum of uncorrelated uniform noise.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.whitenoise2"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003"><span class="c002">Spectrum</span></span><span class="c003"> provides a method that computes the IntegratedSpectrum:</span></p><pre class="verbatim"><span class="c003">    def make_integrated_spectrum(self):
+        cs = np.cumsum(self.power)
+        cs /= cs[-1]
+        return IntegratedSpectrum(cs, self.fs)
+</span></pre><p><span class="c003"><span class="c002">self.power</span></span><span class="c003"> is a NumPy array containing power for each frequency.
+</span><span class="c003"><span class="c002">np.cumsum</span></span><span class="c003"> computes the cumulative sum of the powers.
+Dividing through by the last element normalizes the integrated
+spectrum so it runs from 0 to 1.</span></p><p><span class="c003">The result is an IntegratedSpectrum. Here is the class definition:</span></p><pre class="verbatim"><span class="c003">class IntegratedSpectrum(object):    
+    def __init__(self, cs, fs):
+        self.cs = cs
+        self.fs = fs
+</span></pre><p><span class="c003">Like Spectrum, IntegratedSpectrum provides </span><code><span class="c003">plot_power</span></code><span class="c003">, so
+we can compute and plot the integrated spectrum like this:</span></p><pre class="verbatim"><span class="c003">    integ = spectrum.make_integrated_spectrum()
+    integ.plot_power()
+</span></pre><p><span class="c003">The result, shown in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.whitenoise2"><span class="c003">4.3</span></a><span class="c003">, is a straight line,
+which indicates that power at all frequencies is constant, on average.
+Noise with equal power at all frequencies is called </span><span class="c003"><span class="c007">white noise</span></span><span class="c003">
+by analogy with light, because an equal mixture of light at all
+visible frequencies is white.
+</span><a id="hevea_default165"></a></p><span class="c003">
+</span><h2 class="section" id="sec33"><span class="c003">4.3&nbsp;&nbsp;Brownian noise</span></h2>
+<p><span class="c003">
+</span><a id="brownian"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp021.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.4: Waveform of Brownian noise.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.rednoise0"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">UU noise is uncorrelated, which means that each value does not depend
+on the others. An alternative is </span><span class="c003"><span class="c007">Brownian noise</span></span><span class="c003">, in which each value
+is the sum of the previous value and a random “step”.
+</span><a id="hevea_default166"></a></p><p><span class="c003">It is called “Brownian” by analogy with Brownian motion, in which a
+particle suspended in a fluid moves apparently at random, due to
+unseen interactions with the fluid. Brownian motion is often
+described using a </span><span class="c003"><span class="c007">random walk</span></span><span class="c003">, which is a mathematical model 
+of a path where the distance between steps is characterized by a
+random distribution.
+</span><a id="hevea_default167"></a></p><p><span class="c003">In a one-dimensional random walk, the particle moves up or down
+by a random amount at each time step. The location of the particle
+at any point in time is the sum of all previous steps.</span></p><p><span class="c003">This observation suggests a way to generate Brownian noise:
+generate uncorrelated random steps and then add them up.
+Here is a class definition that implements this algorithm:</span></p><pre class="verbatim"><span class="c003">class BrownianNoise(_Noise):
+
+    def evaluate(self, ts):
+        dys = np.random.uniform(-1, 1, len(ts))
+        ys = np.cumsum(dys)
+        ys = normalize(unbias(ys), self.amp)
+        return ys
+</span></pre><p><span class="c003"><span class="c002">evaluate</span></span><span class="c003"> uses </span><span class="c003"><span class="c002">np.random.uniform</span></span><span class="c003"> to generate an
+uncorrelated signal and </span><span class="c003"><span class="c002">np.cumsum</span></span><span class="c003"> to compute their cumulative
+sum.</span></p><p><span class="c003">Since the sum is likely to escape the range from -1 to
+1, we have to use </span><span class="c003"><span class="c002">unbias</span></span><span class="c003"> to shift the mean to 0, and </span><span class="c003"><span class="c002">normalize</span></span><span class="c003"> to get the desired maximum amplitude.</span></p><p><span class="c003">Here’s the code that generates a BrownianNoise object and plots the
+waveform.</span></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.BrownianNoise()
+    wave = signal.make_wave(duration=0.5, framerate=11025)
+    wave.plot()
+</span></pre><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.rednoise0"><span class="c003">4.4</span></a><span class="c003"> shows the result. The waveform
+wanders up and down, but there is a clear correlation between
+successive values. When the amplitude is high, it tends to stay
+high, and vice versa.
+</span><a id="hevea_default168"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp022.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.5: Spectrum of Brownian noise on a linear scale (left) and
+log-log scale (right).</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.rednoise3"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">If you plot the spectrum of Brownian noise on a linear scale, as
+in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.rednoise3"><span class="c003">4.5</span></a><span class="c003"> (left), it
+doesn’t look like much. Nearly all of the power is at the lowest
+frequencies; the higher frequency components are not visible.
+</span><a id="hevea_default169"></a><span class="c003">
+</span><a id="hevea_default170"></a></p><p><span class="c003">To see the shape of the spectrum more clearly, we can plot power
+and frequency on a log-log scale. Here’s the code:</span></p><pre class="verbatim"><span class="c003">    spectrum = wave.make_spectrum()
+    spectrum.plot_power(linewidth=1, alpha=0.5)
+    thinkplot.config(xscale='log', yscale='log')
+</span></pre><p><span class="c003">The result is in Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.rednoise3"><span class="c003">4.5</span></a><span class="c003"> (right). The relationship between
+power and frequency is noisy, but roughly linear.</span></p><p><span class="c003"><span class="c002">Spectrum</span></span><span class="c003"> provides </span><code><span class="c003">estimate_slope</span></code><span class="c003">, which uses SciPy to compute
+a least squares fit to the power spectrum:</span></p><pre class="verbatim"><span class="c003">#class Spectrum
+
+    def estimate_slope(self):
+        x = np.log(self.fs[1:])
+        y = np.log(self.power[1:])
+        t = scipy.stats.linregress(x,y)
+        return t
+</span></pre><p><span class="c003">It discards the first component of the spectrum because
+this component corresponds to </span><span class="c003"><span class="c006">f</span></span><span class="c003">=0</span><span class="c003">, and </span><span class="c003">log</span><span class="c003">0</span><span class="c003"> is undefined.</span></p><p><code><span class="c003">estimate_slope</span></code><span class="c003"> returns the result from </span><span class="c003"><span class="c002">scipy.stats.linregress</span></span><span class="c003">, which is an object that contains the
+estimated slope and intercept, coefficient of determination (</span><span class="c003"><span class="c006">R</span></span><sup><span class="c003">2</span></sup><span class="c003">),
+p-value, and standard error. For our purposes, we only need the
+slope.
+</span><a id="hevea_default171"></a></p><p><span class="c003">For Brownian noise, the slope of the power spectrum is -2 (we’ll see
+why in Chapter&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp010.html#diffint"><span class="c003">9</span></a><span class="c003">), so we can write this relationship:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003">log</span><span class="c003"><span class="c006">P</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">k</span></span><span class="c003">&nbsp;&#8722;2&nbsp;</span><span class="c003">log</span><span class="c003"><span class="c006">f</span></span><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">P</span></span><span class="c003"> is power, </span><span class="c003"><span class="c006">f</span></span><span class="c003"> is frequency, and </span><span class="c003"><span class="c006">k</span></span><span class="c003"> is the intercept
+of the line, which is not important for our purposes.
+Exponentiating both sides yields:
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">P</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">K</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">2</span></sup><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+where </span><span class="c003"><span class="c006">K</span></span><span class="c003"> is </span><span class="c003"><span class="c006">e</span></span><sup><span class="c003"><span class="c006">k</span></span></sup><span class="c003">, but still not important. More relevant is
+that power is proportional to </span><span class="c003">1/</span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">2</span></sup><span class="c003">, which is characteristic
+of Brownian noise.</span></p><p><span class="c003">Brownian noise is also called </span><span class="c003"><span class="c007">red noise</span></span><span class="c003">, for the same reason that
+white noise is called “white”. If you combine visible light with
+power proportional to </span><span class="c003">1/</span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">2</span></sup><span class="c003">, most of the power
+would be at the low-frequency end of the spectrum, which is red.
+Brownian noise is also sometimes called “brown noise”, but I think
+that’s confusing, so I won’t use it.
+</span><a id="hevea_default172"></a></p><span class="c003">
+</span><h2 class="section" id="sec34"><span class="c003">4.4&nbsp;&nbsp;Pink Noise</span></h2>
+<p><span class="c003">
+</span><a id="pink"></a></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp023.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.6: Waveform of pink noise with </span><span class="c003">&#946;=1</span><span class="c003">.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.pinknoise0"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">For red noise, the relationship between frequency
+and power is
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">P</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">K</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">2</span></sup><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+There is nothing special about the exponent 2. More generally,
+we can synthesize noise with any exponent, </span><span class="c003">&#946;</span><span class="c003">.
+</span></p><table class="display dcenter"><tbody><tr class="c013"><td class="dcell"><span class="c003"><span class="c006">P</span></span><span class="c003">&nbsp;=&nbsp;</span><span class="c003"><span class="c006">K</span></span><span class="c003">&nbsp;/&nbsp;</span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">&#946;</span></sup><span class="c003">&nbsp;</span></td></tr>
+</tbody></table><p><span class="c003">
+When </span><span class="c003">&#946; = 0</span><span class="c003">, power is constant at all frequencies,
+so the result is white noise. When </span><span class="c003">&#946;=2</span><span class="c003"> the result is red noise.</span></p><p><span class="c003">When </span><span class="c003">&#946;</span><span class="c003"> is between 0 and 2, the result is between white and
+red noise, so it is called </span><span class="c003"><span class="c007">pink noise</span></span><span class="c003">.
+</span><a id="hevea_default173"></a></p><p><span class="c003">There are several ways to generate pink noise. The simplest is to
+generate white noise and then apply a low-pass filter with the
+desired exponent. </span><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> provides a class that represents
+a pink noise signal:
+</span><a id="hevea_default174"></a><span class="c003">
+</span><a id="hevea_default175"></a></p><pre class="verbatim"><span class="c003">class PinkNoise(_Noise):
+
+    def __init__(self, amp=1.0, beta=1.0):
+        self.amp = amp
+        self.beta = beta
+</span></pre><p><span class="c003"><span class="c002">amp</span></span><span class="c003"> is the desired amplitude of the signal.
+</span><span class="c003"><span class="c002">beta</span></span><span class="c003"> is the desired exponent. </span><span class="c003"><span class="c002">PinkNoise</span></span><span class="c003"> provides
+</span><code><span class="c003">make_wave</span></code><span class="c003">, which generates a Wave.</span></p><pre class="verbatim"><span class="c003">    def make_wave(self, duration=1, start=0, framerate=11025):
+        signal = UncorrelatedUniformNoise()
+        wave = signal.make_wave(duration, start, framerate)
+        spectrum = wave.make_spectrum()
+
+        spectrum.pink_filter(beta=self.beta)
+
+        wave2 = spectrum.make_wave()
+        wave2.unbias()
+        wave2.normalize(self.amp)
+        return wave2
+</span></pre><p><span class="c003"><span class="c002">duration</span></span><span class="c003"> is the length of the wave in seconds. </span><span class="c003"><span class="c002">start</span></span><span class="c003"> is
+the start time of the wave; it is included so that </span><code><span class="c003">make_wave</span></code><span class="c003">
+has the same interface for all types of signal, but for random noise,
+start time is irrelevant. And </span><span class="c003"><span class="c002">framerate</span></span><span class="c003"> is the number of
+samples per second.</span></p><blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp024.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.7: Spectrum of white, pink, and red noise on a log-log scale.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.noise-triple"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><code><span class="c003">make_wave</span></code><span class="c003"> creates a white noise wave, computes its spectrum,
+applies a filter with the desired exponent, and then converts the
+filtered spectrum back to a wave. Then it unbiases and normalizes
+the wave.</span></p><p><span class="c003"><span class="c002">Spectrum</span></span><span class="c003"> provides </span><code><span class="c003">pink_filter</span></code><span class="c003">:</span></p><pre class="verbatim"><span class="c003">    def pink_filter(self, beta=1.0):
+        denom = self.fs ** (beta/2.0)
+        denom[0] = 1
+        self.hs /= denom
+</span></pre><p><code><span class="c003">pink_filter</span></code><span class="c003"> divides each element of the spectrum by
+</span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">&#946;/2</span></sup><span class="c003">. Since power is the square of amplitude, this
+operation divides the power at
+each component by </span><span class="c003"><span class="c006">f</span></span><sup><span class="c003">&#946;</span></sup><span class="c003">. It treats the component
+at </span><span class="c003"><span class="c006">f</span></span><span class="c003">=0</span><span class="c003"> as a special case, partly to avoid dividing by 0, and partly
+because this element represents the bias of the signal,
+which we are going to set to 0 anyway. 
+</span><a id="hevea_default176"></a></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.pinknoise0"><span class="c003">4.6</span></a><span class="c003"> shows the resulting waveform. Like
+Brownian noise, it wanders up and down in a way that suggests
+correlation between successive values, but at least visually, it looks
+more random. In the next chapter we will come back to this
+observation and I will be more precise about what I mean by
+“correlation” and “more random”.
+</span><a id="hevea_default177"></a><span class="c003">
+</span><a id="hevea_default178"></a></p><p><span class="c003">Finally, Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.noise-triple"><span class="c003">4.7</span></a><span class="c003"> shows a spectrum for
+white, pink, and red noise on the same log-log scale.
+The relationship between the exponent, </span><span class="c003">&#946;</span><span class="c003">, and the slope
+of the spectrum is apparent in this figure.</span></p><span class="c003">
+</span><h2 class="section" id="sec35"><span class="c003">4.5&nbsp;&nbsp;Gaussian noise</span></h2>
+<blockquote class="figure"><div class="center"><hr class="c015"></div><span class="c003">
+</span><div class="center"><span class="c003"><img src="./Noise_files/thinkdsp025.png"></span></div><span class="c003">
+</span><div class="caption"><table class="c000 cellpading0"><tbody><tr><td class="c014"><span class="c003">Figure 4.8: Normal probability plot for the real and imaginary parts
+of the spectrum of Gaussian noise.</span></td></tr>
+</tbody></table></div><span class="c003">
+</span><a id="fig.noise1"></a><span class="c003">
+</span><div class="center"><hr class="c015"></div></blockquote><p><span class="c003">We started with uncorrelated uniform (UU) noise and showed that,
+because its spectrum has equal power at all frequencies, on
+average, UU noise is white.</span></p><p><span class="c003">But when people talk about “white noise”, they don’t always
+mean UU noise. In fact, more often they mean uncorrelated
+Gaussian (UG) noise.
+</span><a id="hevea_default179"></a><span class="c003">
+</span><a id="hevea_default180"></a></p><p><span class="c003"><span class="c002">thinkdsp</span></span><span class="c003"> provides an implementation of UG noise:</span></p><pre class="verbatim"><span class="c003">class UncorrelatedGaussianNoise(_Noise):
+
+    def evaluate(self, ts):
+        ys = np.random.normal(0, self.amp, len(ts))
+        return ys
+</span></pre><p><span class="c003"><span class="c002">np.random.normal</span></span><span class="c003"> returns a NumPy array of values from a
+Gaussian distribution, in this case with mean 0 and standard deviation
+</span><span class="c003"><span class="c002">self.amp</span></span><span class="c003">. In theory the range of values is from negative to
+positive infinity, but we expect about 99% of the values to be
+between -3 and 3.</span></p><p><span class="c003">UG noise is similar in many ways to UU noise. The spectrum has
+equal power at all frequencies, on average, so UG is also white.
+And it has one other interesting property: the spectrum of UG
+noise is also UG noise. More precisely, the real and imaginary
+parts of the spectrum are uncorrelated Gaussian values.</span></p><p><span class="c003">To test that claim, we can generate the spectrum of UG noise and
+then generate a “normal probability plot”, which is a graphical
+way to test whether a distribution is Gaussian.
+</span><a id="hevea_default181"></a></p><pre class="verbatim"><span class="c003">    signal = thinkdsp.UncorrelatedGaussianNoise()
+    wave = signal.make_wave(duration=0.5, framerate=11025)
+    spectrum = wave.make_spectrum()
+
+    thinkstats2.NormalProbabilityPlot(spectrum.real)
+    thinkstats2.NormalProbabilityPlot(spectrum.imag)
+</span></pre><p><span class="c003"><span class="c002">NormalProbabilityPlot</span></span><span class="c003"> is provided by </span><span class="c003"><span class="c002">thinkstats2</span></span><span class="c003">, which is
+included in the repository for this book. If you are not familiar
+with normal probability plots, you can read about them in Chapter 5
+of </span><span class="c003"><span class="c006">Think Stats</span></span><span class="c003"> at </span><a href="http://thinkstats2.com/"><span class="c003"><span class="c002">http://thinkstats2.com</span></span></a><span class="c003">.</span></p><p><span class="c003">Figure&nbsp;</span><a href="http://greenteapress.com/thinkdsp/html/thinkdsp005.html#fig.noise1"><span class="c003">4.8</span></a><span class="c003"> shows the results. The gray lines
+show a linear model fit to the data; the dark lines show the
+data.</span></p><p><span class="c003">A straight line on a normal probability plot indicates
+that the data come from a Gaussian distribution. Except for
+some random variation at the extremes, these lines are straight,
+which indicates that the spectrum of UG noise is UG noise.</span></p><p><span class="c003">The spectrum of UU noise is also UG noise, at least approximately. In
+fact, by the Central Limit Theorem, the spectrum of almost any
+uncorrelated noise is approximately Gaussian, as long as the
+distribution has finite mean and standard deviation, and the number of
+samples is large.</span></p><span class="c003">
+</span><h2 class="section" id="sec36"><span class="c003">4.6&nbsp;&nbsp;Exercises</span></h2>
+<p><span class="c003">Solutions to these exercises are in </span><span class="c003"><span class="c002">chap04soln.ipynb</span></span><span class="c003">.</span></p><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;1</span></span><span class="c003">&nbsp;&nbsp;<em>
+“A Soft Murmur” is a web site that plays a mixture of natural
+noise sources, including rain, waves, wind, etc. At
+</em></span><a href="http://asoftmurmur.com/about/"><span class="c003"><em><span class="c002">http://asoftmurmur.com/about/</span></em></span></a><span class="c003"><em> you can find their list
+of recordings, most of which are at </em></span><a href="http://freesound.org/"><span class="c003"><em><span class="c002">http://freesound.org</span></em></span></a><span class="c003"><em>.</em></span><p><span class="c003"><em>Download a few of these files and compute the spectrum of each
+signal. Does the power spectrum look like white noise, pink noise,
+or Brownian noise? How does the spectrum vary over time?
+</em></span><a id="hevea_default182"></a><span class="c003"><em>
+</em></span><a id="hevea_default183"></a></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;2</span></span><span class="c003">&nbsp;&nbsp;<em>
+In a noise signal, the mixture of frequencies changes over time.
+In the long run, we expect the power at all frequencies to be equal,
+but in any sample, the power at each frequency is random.</em></span><p><span class="c003"><em>To estimate the long-term average power at each frequency, we can
+break a long signal into segments, compute the power spectrum
+for each segment, and then compute the average across
+the segments. You can read more about this algorithm at
+</em></span><a href="http://en.wikipedia.org/wiki/Bartlett&#39;s_method"><span class="c003"><em><span class="c002">http://en.wikipedia.org/wiki/Bartlett's_method</span></em></span></a><span class="c003"><em>.</em></span></p><p><span class="c003"><em>Implement Bartlett’s method and use it to estimate the power
+spectrum for a noise wave. Hint: look at the implementation
+of </em></span><code><span class="c003"><em>make_spectrogram</em></span></code><span class="c003"><em>.
+</em></span><a id="hevea_default184"></a><span class="c003"><em>
+</em></span><a id="hevea_default185"></a><span class="c003"><em>
+</em></span><a id="hevea_default186"></a><span class="c003"><em>
+</em></span></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;3</span></span><span class="c003">&nbsp;&nbsp;<em>
+At </em></span><a href="http://www.coindesk.com/"><span class="c003"><em><span class="c002">http://www.coindesk.com</span></em></span></a><span class="c003"><em> you can download the daily
+price of a BitCoin as a CSV file. Read this file and compute
+the spectrum of BitCoin prices as a function of time.
+Does it resemble white, pink, or Brownian noise?
+</em></span><a id="hevea_default187"></a><span class="c003"><em>
+</em></span><a id="hevea_default188"></a><span class="c003"><em>
+</em></span></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;4</span></span><span class="c003">&nbsp;&nbsp;<em>
+A Geiger counter is a device that detects radiation.
+When an ionizing particle strikes the detector, it outputs a surge of
+current. The total output at a point in time can be modeled as 
+uncorrelated Poisson (UP) noise, where each sample is
+a random quantity from a Poisson distribution, which corresponds to the
+number of particles detected during an interval.</em></span><p><span class="c003"><em>Write a class called </em></span><span class="c003"><em><span class="c002">UncorrelatedPoissonNoise</span></em></span><span class="c003"><em> that inherits
+from </em></span><code><span class="c003"><em>thinkdsp._Noise</em></span></code><span class="c003"><em> and provides </em></span><span class="c003"><em><span class="c002">evaluate</span></em></span><span class="c003"><em>. It should
+use </em></span><span class="c003"><em><span class="c002">np.random.poisson</span></em></span><span class="c003"><em> to generate random values from a Poisson
+distribution. The parameter of this function, </em></span><span class="c003"><em><span class="c002">lam</span></em></span><span class="c003"><em>, is the
+average number of particles during each interval. You can use the
+attribute </em></span><span class="c003"><em><span class="c002">amp</span></em></span><span class="c003"><em> to specify </em></span><span class="c003"><em><span class="c002">lam</span></em></span><span class="c003"><em>. For example, if the
+frame rate is 10 kHz and </em></span><span class="c003"><em><span class="c002">amp</span></em></span><span class="c003"><em> is 0.001, we expect about 10
+“clicks” per second.</em></span></p><p><span class="c003"><em>Generate about a second of UP noise and listen to it. For low values
+of </em></span><span class="c003"><em><span class="c002">amp</span></em></span><span class="c003"><em>, like 0.001, it should sound like a Geiger counter. For
+higher values it should sound like white noise. Compute and plot the
+power spectrum to see whether it looks like white noise.
+</em></span><a id="hevea_default189"></a><span class="c003"><em>
+</em></span><a id="hevea_default190"></a><span class="c003"><em>
+</em></span></p></div><div class="theorem"><span class="c003"><span class="c007">Exercise&nbsp;5</span></span><span class="c003">&nbsp;&nbsp;<em>
+The algorithm in this chapter for generating pink noise is
+conceptually simple but computationally expensive. There are
+more efficient alternatives, like the Voss-McCartney algorithm.
+Research this method, implement it, compute the spectrum of
+the result, and confirm that it has the desired relationship
+between power and frequency.
+</em></span><a id="hevea_default191"></a><span class="c003"><em>
+</em></span><a id="hevea_default192"></a><span class="c003"><em>
+</em></span></div><span class="c003">
+</span></td>
+
+<td width="130" valign="top">
+
+<p>
+</p><h4>Are you using one of our books in a class?</h4>  We'd like to know
+about it.  Please consider filling out <a href="http://spreadsheets.google.com/viewform?formkey=dC0tNUZkMjBEdXVoRGljNm9FRmlTMHc6MA" onclick="javascript: pageTracker._trackPageview(&#39;/outbound/survey&#39;);">this short survey</a>.
+
+<p>
+<br>
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=2JJH4SWCAVVYSQHO">Think DSP</a><img class="c001" src="./Noise_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491938455/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491938455&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=CTV7PDT7E5EGGJUM"><img border="0" src="./Noise_files/q"></a><img class="c001" src="./Noise_files/ir" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZY6MAYM33ZTNSCNZ">Think Java</a><img class="c001" src="./Noise_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491929561/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491929561&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=PT77ANWARUNNU3UK"><img border="0" src="./Noise_files/q(1)"></a><img class="c001" src="./Noise_files/ir(1)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20">Think Bayes</a><img class="c001" src="./Noise_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449370780/ref=as_li_qf_sp_asin_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449370780&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Noise_files/q(2)"></a><img class="c001" src="./Noise_files/ir(2)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=FJKSQ3IHEMY2F2VA">Think Python 2e</a><img class="c001" src="./Noise_files/ir(3)" width="1" height="1" border="0" alt="">
+
+
+</p><p>
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1491939362/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491939362&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=ZZ454DLQ3IXDHNHX"><img border="0" src="./Noise_files/q(3)"></a><img class="c001" src="./Noise_files/ir(3)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=O7WYM6H6YBYUFNWU">Think Stats 2e</a><img class="c001" src="./Noise_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1491907339/ref=as_li_tl?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1491907339&amp;linkCode=as2&amp;tag=greenteapre01-20&amp;linkId=JVSYKQHYSUIEYRHL"><img border="0" src="./Noise_files/q(4)"></a><img class="c001" src="./Noise_files/ir(4)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_tl?ie=UTF8&amp;tag=greenteapre01-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635">Think Complexity</a><img class="c001" src="./Noise_files/ir(5)" width="1" height="1" border="0" alt="">
+
+</p><p>
+<a href="http://www.amazon.com/gp/product/1449314635/ref=as_li_tf_il?ie=UTF8&amp;camp=1789&amp;creative=9325&amp;creativeASIN=1449314635&amp;linkCode=as2&amp;tag=greenteapre01-20"><img border="0" src="./Noise_files/q(5)"></a><img class="c001" src="./Noise_files/ir(5)" width="1" height="1" border="0" alt="">
+
+
+</p></td>
+</tr>
+</tbody></table>
+
+
+<hr>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp004.html"><img src="./Noise_files/back.png" alt="Previous"></a>
+<a href="http://greenteapress.com/thinkdsp/html/index.html"><img src="./Noise_files/up.png" alt="Up"></a>
+<a href="http://greenteapress.com/thinkdsp/html/thinkdsp006.html"><img src="./Noise_files/next.png" alt="Next"></a>
+
+
+<iframe frameborder="0" scrolling="no" style="background-color: transparent; border: 0px; display: none;" src="./Noise_files/saved_resource.html"></iframe><div id="GOOGLE_INPUT_CHEXT_FLAG" style="display: none;" input="" input_stat="{&quot;tlang&quot;:true,&quot;tsbc&quot;:true,&quot;pun&quot;:true,&quot;mk&quot;:true,&quot;ss&quot;:true}"></div><div id="speechnotesx_mirror_container"><div id="speechnotesx_mirror"></div></div></body></html>
