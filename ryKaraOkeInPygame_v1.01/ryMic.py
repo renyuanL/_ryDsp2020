@@ -285,7 +285,7 @@ class Ry麥類:
         
         # 目前只有這2檔案 有 歌詞時間點
         
-        音檔名們= [ 'rySongs/A440_16K03C.wav']
+        #音檔名們= [ 'rySongs/A440_16K03C.wav']
        
         
         
