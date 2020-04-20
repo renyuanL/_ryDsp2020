@@ -9,6 +9,8 @@ Vpython 與 tk 可暫時退位。
 rySpecgram001.py
 rySpecgram.py
 2016/08/16
+
+我.麥.stop() #####################  2020/04/21
 '''
 
 
@@ -570,6 +572,9 @@ class Ry頻譜類:
                 #
                 if e.type in [pg.QUIT]:
                     我.主迴圈執行中= False
+                    
+                    我.麥.stop() #####################  2020/04/21
+                    
                     pg.quit()
                     break
                 #
@@ -679,15 +684,16 @@ class Ry頻譜類:
             
         我.頻譜線.start() # 用 thread 執行時，關不掉！！(quit 不了)
 
-if __name__ == '__main__':
 
-    
+def main():    
     麥= Ry麥類()
     麥.start()
     
     頻譜= Ry頻譜類(麥)
     頻譜.start()
     
+if __name__ == '__main__':
+    main()
     
     
     
