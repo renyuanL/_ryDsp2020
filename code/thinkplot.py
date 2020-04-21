@@ -4,6 +4,9 @@ by Allen B. Downey, available from greenteapress.com
 Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
+'''
+## by Renyuan Lyu @2020/04/22
+'''
 
 from __future__ import print_function
 
@@ -240,6 +243,8 @@ def Plot(obj, ys=None, style='', **options):
         plt.plot(xs, style, **options)
     else:
         plt.plot(xs, ys, style, **options)
+    
+    plt.grid(True) ## by Renyuan Lyu @2020/04/22
 
 
 def Vlines(xs, y1, y2, **options):
@@ -649,6 +654,8 @@ def Pcolor(xs, ys, zs, pcolor=True, contour=False, **options):
     if contour:
         cs = plt.contour(X, Y, Z, **options)
         plt.clabel(cs, inline=1, fontsize=10)
+    
+    plt.grid(True) ## by Renyuan Lyu @2020/04/22
 
 
 def Text(x, y, s, **options):
