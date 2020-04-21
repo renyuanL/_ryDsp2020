@@ -3,11 +3,10 @@ by Allen B. Downey, available from greenteapress.com
 
 Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
-"""
-'''
-## by Renyuan Lyu @2020/04/22
-'''
 
+## by Renyuan Lyu @2020/04/22
+
+"""
 from __future__ import print_function
 
 import math
