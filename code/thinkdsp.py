@@ -469,7 +469,7 @@ class IntegratedSpectrum:
 
         thinkplot.plot(fs, cs, **options)
 
-    def estimate_slope(self, low=1, high=-12000):
+    def estimate_slope(self, low=1, high=None):
         """Runs linear regression on log cumulative power vs log frequency.
 
         returns: slope, inter, r2, p, stderr
